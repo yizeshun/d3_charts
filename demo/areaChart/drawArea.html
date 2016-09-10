@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+
+        .area{
+
+            fill:#C8B8FF;
+
+        }
+
+
+    </style>
+</head>
+<body>
+
+<script>
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",600)
+            .attr("height",600);
+
+    var area=d3.svg.area()
+            .x(function(d){return d.x})
+            .y0(600)
+            .y1(function(d){return d.y});
+
+
+    d3.tsv("test.tsv",function(error,data){
+
+        console.log(data);
+
+        var data1=[];
+
+        data.forEach(function(d){
+
+            var newY= d.y;
+            if(d.x==300){
+                newY=0;
+            }
+
+            var temp={"x": d.x,"y":newY};
+            data1.push(temp);
+
+
+        });
+
+        svg.append("path")
+                .attr("class","area")
+                .attr("d",area(data))
+                .transition()
+                .duration(2000)
+                .attr("d",area(data1));
+
+
+    });
+
+
+
+
+</script>
+
+</body>
+</html>

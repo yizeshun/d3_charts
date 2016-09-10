@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>读取JSON数据画一个折线图</title>
+    <script type="text/javascript" src="js/d3.js"></script>
+    <script type="text/javascript" src="js/msgicdataLine.js"></script>
+</head>
+<style type="text/css">
+    body{
+        height: 100%;
+    }
+    .title{font-family:Arial,微软雅黑;font-size:18px;text-anchor:middle;}
+    .subTitle{font-family:Arial,宋体;font-size:12px;text-anchor:middle;fill:#666}
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+    .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+        fill:#999;
+    }
+
+    .inner_line path,
+    .inner_line line {
+        fill: none;
+        stroke:#E7E7E7;
+        shape-rendering: crispEdges;
+    }
+
+    .legend{font-size: 12px; font-family:Arial, Helvetica, sans-serif}
+
+    .tiptools
+    {
+        display:block;
+        background-color:#FFF;
+        border:1px solid #E7E7E7;
+        padding:10px;
+        font-size:12px;
+        font-family:Arial, Helvetica, sans-serif;
+        cursor:pointer;
+    }
+
+</style>
+<body>
+<script type="text/javascript">
+    //读取JSON数据
+    d3.json("makeJson.php",function(error,data)
+    {
+        var dataset=[];
+        var xMark=[];
+        data.forEach(function(d)
+        {
+            dataset.push(d.revenue);
+            str=d.postdate;
+            str = str.replace(/-/g,"/");
+            var date = new Date(str);
+            xMark.push(date.getDate());
+        });
+
+        var chart=new magicdataLine(10,10);
+        chart.w=1000;
+        chart.title="从JSON中读取的数据";
+        chart.subTitle="时间：2013年1月 指标名称：销售额";
+        chart.dataset=[dataset];
+        chart.xMarks=xMark;
+        chart.lineNames=["系列1"];
+        chart.draw();
+    });
+
+</script>
+</body>
+</html>

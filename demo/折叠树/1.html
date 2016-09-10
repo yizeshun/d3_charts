@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+        .link{
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+
+        .node circle {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+
+        .node {
+            font: 12px sans-serif;
+        }
+
+    </style>
+</head>
+<body>
+
+<script>
+
+    var width=600;
+    var height=600;
+
+    var tree=d3.layout.tree()
+            .size([width,height-200])
+            .separation(function(a,b){return a.parent== b.parent?2:1;});
+
+    var diagonal=d3.svg.diagonal()
+            .projection(function (d) {return [d.y, d.x]});
+
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height)
+            .append("g")
+            .attr("transform","translate(40,0)");
+
+
+
+
+
+    //显示所点击节点的孩子节点（不包括孩子的孩子）以及与以该节点为源头的线
+    function openChildrenDisplayByRoot(node,link,root){
+
+        var name= root.name;//获取点击节点的名称
+
+        //显示单击节点的孩子节点
+        node.each(function(i){
+            if(i.parent!=null&&i.parent.name==name){
+                d3.select(this)
+                        .attr("opacity","1");
+            }
+        });
+
+        //显示以该单击节点为源头的线
+        link.each(function(i){
+            if(i.source.name==name){
+                d3.select(this)
+                        .attr("opacity","1");
+            }
+
+
+        });
+
+        //标记该节点已经展开
+        root.is_open=1;
+
+
+    }
+
+    //隐藏单击节点的所有后代节点（包括孩子的孩子）以及目的地为后代节点的线
+    function closeChildrenDisplayByRoot(node,link,root){
+
+
+        var generations=[];
+
+        if(root.children!=null){
+
+            //获取该节点的儿子节点
+            generations=root.children;
+
+        }
+
+        //遍历儿子节点
+        generations.forEach(function(d){
+
+            //从所有的选择集g中筛选捆绑数据和儿子节点所带数据一样的g元素，
+            //将其透明度改为0，并且因为它本身的透明度改为0，所以它的is_open属性
+            //也要设为关闭，不然不符合逻辑
+            node.each(function(i){
+                if(i.name==d.name){
+                    d3.select(this)
+                            .attr("opacity","0");
+                    d.is_open=0;
+                }
+            });
+
+            //从所有的选择集path元素中选出绑定数据符合条件的path，即该path的目的地是上面儿子节点
+            link.each(function(i){
+                if(i.target.name==d.name){
+                    d3.select(this)
+                            .attr("opacity","0");
+                }
+            });
+
+            //递归调用该函数，取得并操作所有的后代节点
+            closeChildrenDisplayByRoot(node,link,d);
+        });
+
+        //最后设置点击的节点的is_open属性为关闭状态
+        root.is_open=0;
+
+    }
+
+
+    d3.json("city.json",function(error,data){
+
+        var nodes=tree.nodes(data);
+        var links=tree.links(nodes);
+
+        //为每个节点对象添加一个is_open属性，用来标记该节点的打开状态
+        for(i=0;i<nodes.length;i++){
+            nodes[i].is_open=0;
+        }
+
+        //添加path，初始化为看不见状态
+        var link=svg.selectAll(".link")
+                .data(links)
+                .enter()
+                .append("path")
+                .attr("class","link")
+                .attr("d",diagonal)
+                .attr("opacity","0");
+
+        //添加g元素，并且将跟节点的透明度设为1，其他节点设为0，只有根节点看得见
+        var node=svg.selectAll(".node")
+                .data(nodes)
+                .enter()
+                .append("g")
+                .attr("class","node")
+                .attr("transform",function(d){return "translate("+d.y+","+ d.x+")"})
+                .attr("opacity",function(d){
+                    if(d.parent==null){
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                })
+                .on("click",function(d){
+
+                    //如果单击的节点有孩子节点
+                    if(d.children!=null){
+
+                        //如果单击的节点的闭合状态为关闭
+                        if(d.is_open==0){
+
+                            openChildrenDisplayByRoot(node,link,d);
+
+                        }else{
+
+                            closeChildrenDisplayByRoot(node,link,d);
+                        }
+
+                    }
+
+                });
+
+        //添加圆
+        node.append("circle")
+                .attr("r",4.5);
+
+        //添加字体
+        node.append("text")
+                .text(function (d) {return d.name;})
+                .attr("dx",function(d){return d.children?-8:8;})
+                .attr("dy",4)
+                .style("text-anchor",function(d){return d.children?"end":"start"});
+
+
+    });
+
+</script>
+
+
+</body>
+</html>

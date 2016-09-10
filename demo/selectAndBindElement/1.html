@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+<p></p>
+<p></p>
+<p></p>
+
+
+   <script>
+
+
+
+       /*var str="China";
+       var body=d3.select("body");
+       var p=body.selectAll("p");
+       p.datum(str);  //datum 将一个数据绑定到选择集上
+       p.text(function(d,i){
+           return "第"+i+"个元素绑定的数据是"+d;
+       });*/
+
+
+      /*var dataset = ["I like dogs","I like cats","I like snakes"];
+      var body=d3.select("body");
+      var p=body.selectAll("p");
+      var mm=p.data(dataset);//将一个数组绑定到选择集上，数组的各项值分别与选择集的各元素绑定
+      *//* .text(function(d,i){
+               return d;
+       })*/
+
+      /*console.log(mm);*/
+
+       /*var dataset = [3, 6, 9, 12, 15];
+       var p = d3.select("body").selectAll("p");
+       var update = p.data(dataset);
+       console.log(update);
+       console.log(update.enter());
+       console.log(update.exit());*/
+
+
+
+
+
+       //数据
+       var persons = [	{ id: 1 , name:"张三" },
+           { id: 6 , name:"李四" },
+           { id: 9 , name:"王五" }];
+
+       //选择body中的所有的p元素
+       var p = d3.select("body").selectAll("p");
+
+       //绑定数据，并修改p元素的内容
+       p.data(persons)
+               .text(function(d){
+                   return d.id + " : " + d.name;
+               });
+
+
+       //更新persons里的数据
+       persons = [ 	{ id: 5 , name:"李四" },
+           { id: 9 , name:"张三" },
+           { id: 3 , name:"王五" }];
+
+       //根据键函数的规则绑定数据，并修改内容
+       p.data(persons, function(d){ return d.name; })
+               .text(function(d){
+                   return d.id + " : " + d.name;
+               });
+
+   </script>
+
+
+
+
+
+</body>
+</html>

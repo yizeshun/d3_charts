@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"></script>
+</head>
+<body>
+<script>
+
+   var dataset= [
+
+        {
+            "id": 1,
+            "property": [
+                {
+                    "name": "a",
+                    "value": 10
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 10
+                },
+                {
+                    "name": "d",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "property": [
+                {
+                    "name": "a",
+                    "value": 10
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 10
+                },
+                {
+                    "name": "d",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "property": [
+                {
+                    "name": "a",
+                    "value": 10
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 10
+                },
+                {
+                    "name": "d",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "property": [
+                {
+                    "name": "a",
+                    "value": 10
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 10
+                },
+                {
+                    "name": "d",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "property": [
+                {
+                    "name": "a",
+                    "value": 10
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 10
+                },
+                {
+                    "name": "d",
+                    "value": 10
+                }
+            ]
+        }
+
+    ];
+
+
+
+    var myLayout=function(){
+
+        var w = 200;
+        var h = 200;
+
+        var R = 100;
+        var r = 40;
+        var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+        var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+
+        var inner_padding_angle = 1; // 每个小弧在顺时针方向上的间隔
+        var outer_padding_angle = 9; // 每个大类在顺时针方向上的间隔
+       /* var elem_angle = 15; */        // 每个弧的弧度，值为角度，需要转换
+
+        // 角度转弧度
+        function degToRadian(deg){
+            var radian = deg/180 * Math.PI;
+            return radian;
+        }
+
+
+
+        function layout(){
+
+            var ipa = degToRadian(inner_padding_angle);
+            var opa = degToRadian(outer_padding_angle);
+           /* var ea  = degToRadian(elem_angle);*/
+
+            var part=(Math.PI*2-5*opa)/dataset.length;
+
+
+            dataset.forEach(function(d,i){
+                var start=i*part+i*opa;
+                solve(start, d.property);
+
+            });
+            function solve(start,arr){
+                var itemPart=(part-ipa)/arr.length;
+                arr.forEach(function(d,i){
+                    var itemStart=start+i*itemPart+i*ipa;
+                    d.data=[];
+                    for(var j=0;j<4;j++){
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr
+                        })
+                    }
+
+                });
+            }
+
+
+
+            return dataset;
+
+        }
+
+        return layout;
+    };
+
+    var layout=myLayout();
+    var newDataset=layout();
+   console.log(dataset);
+
+   var arc = d3.svg.arc()
+           .startAngle(function(d){return d.startAngle})
+           .endAngle(function(d){return d.endAngle})
+           .innerRadius(function(d){return d.ir})
+           .outerRadius(function(d){return d.or});
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",200)
+            .attr("height",200);
+
+    var box=svg.append("g")
+            .attr('transform','translate(100,100)');
+
+
+
+    box.selectAll("g").data(newDataset)
+            .enter()
+            .append("g")
+            .attr("class",function(d){
+                return "category"+ d.id;
+            });
+
+    var categories=box.selectAll("g");
+
+   categories.each(function(d){
+        var gs=d3.select(this).selectAll("g")
+               .data(d.property)
+               .enter()
+               .append("g")
+               .attr("class",function(k){
+                   return k.name;
+               });
+
+        gs.each(function(m){
+            console.log(m);
+            d3.select(this).selectAll("path")
+                    .data(m.data)
+                    .enter()
+                    .append("path")
+                    .attr("d",arc);
+        });
+
+
+   });
+
+
+</script>
+
+
+</body>
+</html>

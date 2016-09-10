@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+    <script>
+
+        var width=600;
+        var height=600;
+        var svg=d3.select("body")
+                .append("svg")
+                .attr("width",width)
+                .attr("height",height);
+
+        var dataset = [50, 43, 120, 87, 99, 167, 142];
+
+        //外边框
+        var padding = { top: 20 , right: 20, bottom: 20, left: 20 };
+        //矩形所占的宽度（包括空白），单位为像素
+        var rectStep = 35;
+        //矩形所占的宽度（不包括空白），单位为像素
+        var rectWidth = 30;
+
+        function draw(){
+
+            //处理模板
+            var updateRect=svg.selectAll("rect")
+                    .data(dataset);
+
+            console.log(updateRect);
+
+            var enterRect=updateRect.enter();
+
+            var exitRect=updateRect.exit();
+
+            var updateText=svg.selectAll("text")
+                    .data(dataset);
+
+            var enterText=updateText.enter();
+
+            var exitText=updateText.exit();
+
+            //矩形update部分处理方法
+            updateRect.attr("fill","steelblue")
+                    .attr("x",function(d,i){
+                        return padding.left+i*rectStep;
+                    })
+                    .attr("y",function(d){
+                        return height-padding.bottom-d;
+                    })
+                    .attr("width",rectWidth)
+                    .attr("height",function(d){
+                        return d;
+                    });
+
+
+            //矩形enter部分处理方法
+
+            enterRect.append("rect").attr("fill","steelblue")
+                    .attr("x",function(d,i){
+
+                        return padding.left+i*rectStep;
+                    })
+                    .attr("y",function(d){
+                        return height-padding.bottom-d;
+                    })
+                    .attr("width",rectWidth)
+                    .attr("height",function(d){
+                        return d;
+                    });
+
+            //矩形exit部分处理方法
+
+            exitRect.remove();
+
+            //1. 文字的update部分的处理方法
+            updateText.attr("fill","white")
+                    .attr("font-size","14px")
+                    .attr("text-anchor","middle")
+                    .attr("x", function(d,i){
+                        return padding.left + i * rectStep;
+                    })
+                    .attr("y", function(d){
+                        return height- padding.bottom - d;
+                    })
+                    .attr("dx",rectWidth/2)
+                    .attr("dy","1em")
+                    .text(function(d){
+                        return d;
+                    });
+
+            //2. 文字的enter部分的处理方法
+            enterText.append("text")
+                    .attr("fill","white")
+                    .attr("font-size","14px")
+                    .attr("text-anchor","middle")
+                    .attr("x", function(d,i){
+                        return padding.left + i * rectStep;
+                    })
+                    .attr("y", function(d){
+                        return height- padding.bottom - d;
+                    })
+                    .attr("dx",rectWidth/2)
+                    .attr("dy","1em")
+                    .text(function(d){
+                        return d;
+                    });
+
+            //3. 文字的exit部分的处理方法
+            exitText.remove();
+
+        }
+
+        draw();
+
+        function mysort(){
+            dataset.sort(d3.ascending);
+            draw();
+        }
+
+
+        function myadd(){
+            dataset.push( Math.floor(Math.random() * 100) );
+            draw();
+        }
+
+
+
+
+
+    </script>
+
+    <input type="button" onclick="mysort()" value="排序">
+    <input type="button" onclick="myadd()" value="增加数据">
+
+
+
+</body>
+</html>

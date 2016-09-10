@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+       /* .wrap{width: 1200px;height: auto;margin: 0 auto;}*/
+        #top{width: 100%;height: 100px;}
+        #left{width:30%;;float: left;height: 800px;}
+        #right{width: 70%;float:right;height:800px;}
+        .svg_right{width: 100%;float: right;height:100%;}
+        .svg_left{width: 100%;float: right;height:100%;}
+        .rect{width: 800px;float: right;height:800px;}
+    </style>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+<!--<div class="wrap">-->
+    <div id="top">
+    </div>
+
+    <div id="left">
+    </div>
+
+    <div id="right">
+    </div>
+<!--</div>-->
+
+
+
+
+
+           <script>
+
+              var  w = 800;
+              var  h = 700;
+              var dataset = [];
+              var xRange = Math.random() * 100;
+              var yRange = Math.random() * 100;
+              var numDataPoints = 2000;
+
+              var color=d3.scale.category20();
+
+              for (var i = 0; i < numDataPoints; i++) {
+                  var newNumber1 = Math.round(Math.random() * xRange);
+                  var newNumber2 = Math.round(Math.random() * yRange);
+                  dataset.push([newNumber1, newNumber2]);
+              }
+
+
+              var rscale = d3.scale.linear()
+                      .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                      .range([4, 12]);
+
+              var force=d3.layout.force()
+                      .nodes(dataset)
+                      .size([800,600])
+                      .linkDistance([50])
+                      .charge([-50])
+                      .start();
+
+
+              console.log(dataset);
+
+              var zoom=d3.behavior.zoom()
+                      .scaleExtent([0.1,10])
+                      .on("zoom",zoomed);
+
+              function zoomed(){
+
+                  d3.selectAll("circle")
+                          .attr("transform","translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+              }
+
+
+              var svg = d3.select("#right")
+                      .append("svg")
+                      .attr("class","svg_right");
+
+
+              svg.append("rect")
+                      .attr("x",0)
+                      .attr("y",0)
+                      .attr("width",1600)
+                      .attr("height",1000)
+                      .attr("opacity",0)
+                      .call(zoom);
+
+
+              var circles=svg.selectAll("circle")
+                      .data(dataset)
+                      .enter()
+                      .append("circle")
+                      .attr("r",function(d){
+                          return rscale(d[1]);
+                      })
+                      .style("fill",function(d,i){
+                          return color(d[0])
+                      })
+                      .on("click",function(d){
+                          specific(d);
+                      })
+                      .call(force.drag());
+
+
+              function specific(obj){
+
+                  var a=d3.select("#left").select("svg");
+
+                  console.log(a[0]);
+                  if(a[0]!=null){
+                      a.remove();
+                  }
+
+                  var svg_left=d3.select("#left")
+                          .append("svg")
+                          .attr("class","svg_left");
+
+                  var data=[];
+                  for (var i = 0; i <10; i++) {
+                      var newNumber1 = Math.round(Math.random() * xRange);
+                      var newNumber2 = Math.round(Math.random() * yRange);
+                      data.push([newNumber1, newNumber2]);
+                  }
+
+                  var yscale=d3.scale.linear()
+                          .domain([0,d3.max(data,function(d){return d[1];})])
+                          .range([0,300]);
+                  var rects=svg_left.selectAll("rect")
+                          .data(data)
+                          .enter()
+                          .append("rect")
+                          .attr("x",function(d,i){
+                              return i*30+30;
+                          })
+                          .attr("y",function(d,i){
+                              return 300-yscale(d[1]);
+                          })
+                          .attr("width",function(d,i){
+                              return 28;
+                          })
+                          .attr("height",function(d){
+                              return yscale(d[1]);
+                          })
+                          .attr("fill",function(){
+                              return color(obj[0]);
+                          });
+
+
+                  var texts=svg_left.selectAll("text")
+                          .data(data)
+                          .enter()
+                          .append("text")
+                          .attr("x",function(d,i){
+                              return i*30+30+8;
+                          })
+                          .attr("y",function(d,i){
+                              return 300-yscale(d[1])+14;
+                          })
+                          .text(function(d){
+                              if(d[1]!=0&&d[1]!=1){
+                                  return d[1];
+                              }
+
+                          })
+
+
+
+
+              }
+
+              circles.append("title")
+                      .text(function(d,i){return  "课程名："+d[0]
+                              +"\n"+"时长"+ d[1];});
+
+              force.on("tick",function(){
+                  circles.attr("cx",function(d){return d.x});
+                  circles.attr("cy",function(d){return d.y});
+
+              });
+
+           </script>
+
+
+
+
+
+</body>
+</html>

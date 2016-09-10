@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<style>
+
+    .test{
+
+        fill:#FAFD94;
+        stroke: none;
+
+    }
+
+
+
+</style>
+<body>
+
+<script>
+
+    var dataset=[1];
+
+    var svg=d3.select("body").append("svg")
+            .attr("width",600)
+            .attr("height",600)
+            .append("g");
+
+    var data=[];
+
+    for(var i = 0; i <= 100; i++){
+        data.push({x: i*Math.PI*8/100, y: Math.sin(i*Math.PI*8/100)});
+    }
+
+    var xScale=d3.scale.linear()
+            .domain([0,Math.PI*8])
+            .range([0,600]);
+
+    var yScale=d3.scale.linear()
+            .domain([-1,1])
+            .range([80,100]);
+
+    var clipArea = d3.svg.area()
+            .x(function(d) { return xScale(d.x); } )
+            .y0(function(d) { return yScale(d.y);} )
+            .y1(function(d) { return 150; } );
+
+    var clip=svg.append("defs")
+            .append("clipPath")
+            .attr("id", "clipWave");
+
+    var rect=svg.append("path")
+            .attr("class","test")
+            .attr("d",clipArea(data))
+            .attr('transform','translate(0,50)');
+
+    rect.transition()
+            .duration(500)
+            .attr('transform','translate(0,0)');
+
+
+    function AnimateRect(){
+
+
+            rect.transition()
+                .duration(1000)
+                .ease('linear')
+                .attr('transform','translate(150,0)')
+                .each('end', function(){
+                    rect.attr('transform','translate(0,0)');
+                    AnimateRect();
+                });
+
+
+    }
+
+    var circle_g=svg.append("g").selectAll("circle")
+            .data(dataset)
+            .enter()
+            .append("circle")
+            .style("fill","#178BCA")
+            .attr("cx",600*9/16)
+            .attr("cy",100)
+            .attr("r",50)
+            .style("opacity",0.5);
+
+
+
+    var outArc = d3.svg.arc()
+            .startAngle(0)
+            .endAngle(2*Math.PI)
+            .outerRadius(70)
+            .innerRadius(60);
+
+    var outCircle=svg.append("path")
+            .attr("d", outArc)
+            .style("fill","#178BCA")
+            .attr('transform','translate('+(600*9/16)+','+100+')');
+
+    var text=svg.append("text")
+            .attr("x",600*9/16)
+            .attr("y",100)
+            .style("fill","#178BCA")
+            .attr("font-size", 25 + "px")
+            .attr("text-anchor","middle")
+            .text(0);
+
+    var textTween = function(){
+        var i = d3.interpolate(this.textContent,50);
+        return function(t) { this.textContent = d3.round(i(t))+"%"; }
+    };
+
+    text.transition().duration(1000).tween("text", textTween);
+
+    circle_g.attr("clip-path", "url(#clipWave)");
+
+    setTimeout(AnimateRect(),1000);
+
+
+
+
+
+
+</script>
+</body>
+</html>

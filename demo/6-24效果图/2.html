@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <meta name="apple-touch-fullscreen" content="yes" /><!-- 允许苹果手机全屏应用 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" /><!-- 苹果手机状态栏颜色 -->
+    <script src="../d3/d3.js"></script>
+    <style>
+        * {
+            padding: 0; margin: 0;
+        }
+        html,body {
+            margin: 0; padding: 0;
+            background-color: #ededee;
+            overflow: hidden;
+            height: 100%;
+        }
+        html {
+            width: 100%;
+        }
+
+        #slider3{
+            width: 100%;
+            height:100%;
+            background-image: url("img/bg.png");
+            background-size: 20% auto;
+            background-repeat: repeat;
+            overflow: hidden;
+        }
+        .svg{
+            width:100%;
+            height:100% ;
+        }
+        .oc{
+            stroke-dasharray:"2";
+            stroke:"#64a9c4";
+            fill:"#fff";
+
+        }
+
+    </style>
+
+</head>
+<body>
+<div id="slider3">
+
+
+
+</div>
+<script>
+
+    var data=[
+        {
+            "id":0,
+            "name":"性向指数",
+            "property":[{"name":"内向指数","value":73},{"name":"外向指数","value":27}]
+        },
+        {
+            "id":1,
+            "name":"格致指数",
+            "property":[{"name":"具象指数","value":67},{"name":"抽象指数","value":33}]
+        },
+        {
+            "id":2,
+            "name":"逻辑指数",
+            "property":[{"name":"理性指数","value":59},{"name":"感性指数","value":41}]
+        },
+        {
+            "id":3,
+            "name":"盘互指数",
+            "property":[{"name":"刚性指数","value":71},{"name":"柔性指数","value":29}]
+        }
+
+    ];
+
+    function layout(){
+        for(var i= 0,l=data.length;i<l;i++){
+            var item=data[i];
+            var property=item.property;
+            solve(property);
+        }
+
+        function solve(property){
+            var start=-Math.PI/4;
+            for(var j= 0,pl=property.length;j<pl;j++){
+                var o=property[j];
+                if(j==0){
+                    o.startAngle=start;
+                    o.endAngle=start+ o.value/100*Math.PI*2;
+                }else{
+                    o.startAngle=start;
+                    o.endAngle=start-o.value/100*Math.PI*2;
+                }
+
+            }
+        }
+
+    }
+
+
+    layout();
+
+    console.log(data);
+
+
+    var svg=d3.select("#slider3")
+            .append("svg")
+            .attr("class","svg");
+
+    var container=document.getElementById("slider3");
+
+    var width=container.offsetWidth,
+        height=container.offsetHeight;
+
+    //绘制最底层虚线
+    var path="M"+width*0.35+" "+height*0.25+"L"+width*0.75+" "+height*0.4
+            +"L"+width*0.26+" "+height*0.65+"L"+width*0.7+" "+height*0.85;
+    svg.append("path")
+            .attr("d",path)
+            .style("stroke-width",2)
+            .style("stroke","#64a9c4")
+            .style("fill","none")
+            .style("stroke-dasharray",4)
+            .style("opacity",0)
+            .transition()
+            .delay(1000)
+            .duration(1000)
+            .style("opacity",1);
+
+
+    var groups=svg.selectAll("g")
+            .data(data);
+
+    groups.enter().append("g")
+            .attr("class",function(d,i){return "groups"+i});
+
+    groups.each(function(d,i){
+        if(i==0){
+            d3.select(this).attr("transform","translate("+width*0.35+","+height*0.25+")");
+        }else if(i==1){
+            d3.select(this).attr("transform","translate("+width*0.75+","+height*0.4+")");
+        }else if(i==2){
+            d3.select(this).attr("transform","translate("+width*0.26+","+height*0.65+")");
+        }else{
+            d3.select(this).attr("transform","translate("+width*0.7+","+height*0.85+")");
+        }
+
+    });
+
+    //外圆虚线绘制
+    var outCircle=groups.append("circle")
+            .attr("class","oc")
+            .style("stroke-width",2)
+            .style("stroke","#64a9c4")
+            .style("fill","#EDEDEE")
+            .style("stroke-dasharray",4)
+            .attr("r",0)
+            .transition()
+            .duration(1000)
+            .attr("r",width*0.2);
+
+    //内圆背景绘制
+    var inCircle=groups.append("circle")
+            .attr("class","ic")
+            .style("fill","#BBBBBB")
+            .attr("r",0)
+            .transition()
+            .duration(1000)
+            .attr("r",width*0.18);
+
+    //圆弧绘制
+    var arc = d3.svg.arc()
+            .startAngle(function(d){return d.startAngle})
+            .endAngle(function(d){return d.endAngle})
+            .innerRadius(function(d,i){return i===0?width*0.13:width*0.11})
+            .outerRadius(function(d,i){return i===0?width*0.15:width*0.13});
+
+    var paths=groups.selectAll("acr")
+            .data(function(d){return d.property})
+            .enter()
+            .append("path")
+            .attr("fill",function(d,i){
+                return i==0?"#448ACA":"#fff";
+            });
+
+    paths.each(function(d){
+        console.log(d);
+        this._current={};
+        this._current.name= d.name;
+        this._current.value= d.value;
+        this._current.startAngle= d.startAngle;
+        this._current.endAngle= d.startAngle;
+    });
+
+    paths.transition().duration(1000)
+            .delay(2000)
+            .attrTween("d", function(d,i) {
+                var interpolate = d3.interpolate(this._current, d);
+                var _this = this;
+                return function(t) {
+                    _this._current = interpolate(t);
+                    return arc(_this._current,i);
+                };
+            });
+
+    //属性title绘制
+    var titles=groups.append("text")
+            .attr("class","title")
+            .text(function(d){return d.name});
+
+    titles.each(function(d,i){
+        if(i==0){
+            d3.select(this).attr({"x":width*0.25,"y":-height*0.05});
+        }else if(i==1){
+            d3.select(this).attr({"x":-width*0.45,"y":height*0.05});
+        }else if(i==2){
+            d3.select(this).attr("x",width*0.3);
+        }else{
+            d3.select(this).attr({"x":-width*0.45,"y":height*0.05});
+        }
+
+    });
+
+    titles.attr("opacity",0)
+            .transition()
+            .delay(1000)
+            .duration(1000)
+            .attr("opacity",1);
+
+    //圆内部文字绘制
+    var texts=groups.selectAll(".description")
+            .data(function(d){return d.property})
+            .enter()
+            .append("text")
+            .attr("class","description")
+            .text(function(d){return d.name})
+            .style("font-size",8);
+
+
+    var numbers=groups.selectAll(".number")
+            .data(function(d){return d.property})
+            .enter()
+            .append("text")
+            .attr("class","number")
+            .style("font-size",14);
+
+
+    groups.each(function(d,i){
+        var g_texts=d3.select(this).selectAll(".description");
+
+        var g_numbers=d3.select(this).selectAll(".number");
+
+        g_texts.each(function(d,j){
+            if(j==0){
+                d3.select(this).attr({"x":width*0.02,"y":-height*0.01})
+                        .style("fill","#448ACA");
+            }else{
+                d3.select(this).attr({"x":-width*0.1,"y":height*0.01})
+                        .style("fill","#fff");
+            }
+        });
+
+        g_numbers.each(function(d,j){
+            if(j==0){
+                d3.select(this).attr({"x":width*0.05,"y":height*0.02})
+                        .style("fill","#448ACA");
+            }else{
+                d3.select(this).attr({"x":-width*0.07,"y":height*0.04})
+                        .style("fill","#fff");
+            }
+        });
+    });
+
+    texts.attr("opacity",0)
+            .transition()
+            .delay(2000)
+            .duration(1000)
+            .attr("opacity",1);
+
+
+
+    var textTween = function(d){
+        var i = d3.interpolate(this.textContent, d.value);
+        return function(t) { this.textContent = d3.round(i(t)); }
+    };
+
+    numbers.transition().delay(2000).duration(1000).tween("text", textTween);
+
+
+
+
+</script>
+</body>
+</html>

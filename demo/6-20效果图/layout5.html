@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"></script>
+    <style>
+        #chart{
+            width: 640px;
+            height: 960px;
+            background-color:#efefef;
+            position: relative;
+        }
+        #svg1{
+            position: absolute;
+            top:400px;
+        }
+        #legend{
+            position: absolute;
+            left: 500px;
+            top:350px;
+        }
+        .lText,.rText{
+            font-size: 12px;
+        }
+        .legend{
+            font-size: 10px;
+            font-family: "微软雅黑";
+        }
+        .title{
+            font-size: 14px;
+            font-family: "微软雅黑";
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart">
+
+   <svg width="640" height="500" id="svg1">
+       <g stroke="#64a9c4" stroke-width="1" transform="translate(20,5)">
+           <circle r="5" fill="#fff" stroke-dasharray="2"></circle>
+           <path d="M0 5 L0 180 L10 200 L7 450" stroke-dasharray="2" fill="none"></path>
+       </g>
+       <g transform="translate(70,210)" id="progesses">
+           <rect x="60" width="400" height="7" fill="#fff" rx="3"></rect>
+           <rect x="60" y="60" width="400" height="7" fill="#fff" rx="3"></rect>
+           <rect x="60" y="120" width="400" height="7" fill="#fff" rx="3"></rect>
+           <rect x="60" y="180" width="400" height="7" fill="#fff" rx="3"></rect>
+
+       </g>
+   </svg>
+
+   <svg width="150" height="150" id="legend"></svg>
+
+</div>
+
+<script>
+
+    //获取数据
+    function getData(url){
+        d3.json(url,function(error,root){
+            if(error){
+                throw error;
+            }else{
+                var data=root;
+                drawImg(data);
+
+            }
+        });
+    }
+
+    // 角度转弧度
+    function degToRadian(deg){
+        var radian = deg/180 * Math.PI;
+        return radian;
+    }
+
+    //布局函数
+    function layout(data,w){
+
+        var width=w-150;   //svg画布的宽
+        var height=w-150;  //svg画布的高
+        var R=width/2;     //扇形外半径
+        var r=R/2;        //扇形内半径
+        var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+        var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+        var ipa= degToRadian(1); // 每个小弧在顺时针方向上的间隔,以弧度表示
+        var opa= degToRadian(9); // 每个大弧在顺时针方向上的间隔,以弧度表示
+        var part=(Math.PI*2-data.length*opa)/data.length; //每个大弧的弧度
+        var newData; //返回的布局数据
+
+
+
+        data.forEach(function(d,i){
+
+            var start=i*part+i*opa;//每个大弧的起始角
+            solve(start, d.property,i); //每个大弧具体的布局函数
+
+        });
+
+
+        function solve(start,arr,p){
+
+            var itemPart=(part-ipa*(arr.length-1))/arr.length;//每个property的弧度
+
+            arr.forEach(function(d,i){
+
+                var itemStart=start+i*itemPart+i*ipa;//每个property起始的弧度
+
+                d.data=[];//给每个property加上一下数组,用于存储每个property所包含的四个放射方向小弧的数据
+
+                var num;  //用于计算给每个property的四个放射方向的弧加颜色的个数
+                if(d.value>0&&d.value<=25){
+                    num=1;
+                }else if(d.value>25&& d.value<=50){
+                    num=2;
+                }else if(d.value>50&&d.value<=75){
+                    num=3;
+                }else{
+                    num=4;
+                }
+
+                //每个property只用四个放射方向的弧代表数值
+                for(var j=0;j<4;j++){
+
+                    if(j<num){
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"hsl("+color[p]+","+(25*(j+1))+"%,"+50+"%)"
+                        })
+                    }else{
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"#EDEDED"
+                        })
+                    }
+
+                }
+
+            });
+        }
+
+        newData=data;
+
+        return newData;
+
+    }
+
+    function drawArc(w,h,data){
+
+        var arc = d3.svg.arc()
+                .startAngle(function(d){return d.startAngle})
+                .endAngle(function(d){return d.endAngle})
+                .innerRadius(function(d){return d.ir})
+                .outerRadius(function(d){return d.or});
+
+        var svg=d3.select("body")
+                .select("#chart")
+                .append("svg")
+                .attr("width",w)
+                .attr("height",h);
+
+        svg.append("rect").attr("width",w)
+                .attr("height",h)
+                .attr("fill","#fff");
+
+        var box=svg.append("g")
+                .attr('transform',"translate("+w/2+","+h/2+")")
+                .attr("class","bg");
+
+        box.selectAll("g").data(data)
+                .enter()
+                .append("g")
+                .attr("class",function(d){
+                    return "category"+ d.id;
+                });
+
+        var categories=box.selectAll("g");
+
+        categories.each(function(d){
+            var gs=d3.select(this).selectAll("g")
+                    .data(d.property)
+                    .enter()
+                    .append("g");
+
+            gs.each(function(m){
+
+                d3.select(this).selectAll("path")
+                        .data(m.data)
+                        .enter()
+                        .append("path")
+                        .attr("d",arc)
+                        .style("fill",function(d){return d.color});
+            });
+
+
+        });
+
+
+        addListener(categories,box);
+
+
+    }
+
+
+    function drawBelow(obj){
+
+        var svg1=d3.select("#svg1");
+        var ps=svg1.select("#progesses").selectAll(".rect")
+                .data(obj.property);
+
+        ps.enter()
+                .append("rect")
+                .attr("class","rect")
+                .attr("rx",3)
+                .attr("x",60)
+                .attr("y",function(d,i){return 60*i})
+                .attr("height",7)
+                .attr("fill","hsl("+color[obj.id-1]+",100%,50%)")
+                .attr("width",0)
+                .transition()
+                .duration(1000)
+                .attr("width",function(d){return d.value/100*400});
+
+
+        ps.attr("fill","hsl("+color[obj.id-1]+",100%,50%)")
+                .attr("width",0)
+                .transition()
+                .duration(1000)
+                .attr("width",function(d){return d.value/100*400});
+
+
+        //添加文字
+
+        var title=svg1.select("#progesses").selectAll(".title")
+                .data([obj]);
+
+        title.enter()
+                .append("text")
+                .attr("class","title")
+                .attr("x",-20)
+                .attr("y",-30)
+                .text(function(d){return d.name});
+
+        title.text(function(d){return d.name});
+
+
+        var text_left=svg1.select("#progesses").selectAll(".lText")
+                .data(obj.property);
+        text_left.enter()
+                .append("text")
+                .attr("class","lText")
+                .attr("y",function(d,i){return 60*i+8})
+                .text(function(d){return d.name});
+
+        text_left.text(function(d){return d.name});
+
+        var text_right=svg1.select("#progesses").selectAll(".rText")
+                .data(obj.property);
+        text_right.enter()
+                .append("text")
+                .attr("class","rText")
+                .attr("x",470)
+                .attr("y",function(d,i){return 60*i+8})
+                .text(function(d){return d.value});
+
+        text_right.text(function(d){return d.value})
+                .attr("fill","hsl("+color[obj.id-1]+",100%,50%)");
+
+    }
+
+    function drawLegend(data){
+
+        //添加图例
+        var svgLegend=d3.select("#legend");
+
+        var gl=svgLegend.append("g")
+                .attr("transform","translate(20,10)");
+
+        var lengends=gl.selectAll("g")
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("class",function(d){return "legend"+ d.id});
+
+        lengends.each(function(d,i){
+
+            var legend=d3.select(this);
+            legend.append("circle")
+                    .attr("cy",i*20)
+                    .attr("r",5)
+                    .style("fill","hsl("+color[d.id-1]+",100%,50%)");
+
+            legend.append("text")
+                    .attr("y",i*20+5)
+                    .attr("x",15)
+                    .attr("class","legend")
+                    .text(function(d){return d.name});
+
+
+        });
+
+
+    }
+
+
+
+
+    function addListener(selection,box){
+        var haveRotate=0;
+        //给每个大类注册单击事件
+        selection.on("click",function(d){
+            var currentTransform=box.attr("transform");
+            //画布的最大的g的旋转
+            var degree=(4-d.id)<0?(63+9)*4-haveRotate:(63+9)*(4-d.id)-haveRotate;
+            if(degree<0){
+                degree+=360;
+            }
+
+            var item=0;
+            var timer=setInterval(function(){
+                item+=5;
+                if(item>degree){
+                    clearInterval(timer);
+                    box.attr("transform",""+currentTransform+" "+"rotate("+degree+")");
+                }else if(item<degree){
+
+                    box.attr("transform",""+currentTransform+" "+"rotate("+item+")");
+
+                }
+
+            },50);
+
+            haveRotate+=degree;
+            haveRotate=haveRotate%360;
+
+            drawBelow(d);
+        });
+    }
+
+
+    function drawImg(data){
+
+        var nodes=layout(data,640);
+
+        drawArc(490,490,nodes);
+
+        drawBelow(data[3]);
+
+        drawLegend(data);
+
+    }
+
+    var color=[2,195,166,80,39];
+    getData("data.json");
+
+
+
+
+</script>
+
+
+</body>
+</html>

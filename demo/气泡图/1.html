@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+
+        .bubbles circle{
+
+            fill:blue;
+            opacity: 0.3;
+
+        }
+
+        .bubble text{
+            fill: black;
+            font-size: 14px;
+            font-family: arial;
+            text-anchor: middle;
+        }
+
+    </style>
+</head>
+<body>
+
+   <script>
+
+       var width=800;
+       var height=800;
+       var svg=d3.select("body")
+               .append("svg")
+               .attr("width",width)
+               .attr("height",height);
+
+       var color=d3.scale.category20();
+
+       var pack=d3.layout.pack()
+               .size([width,height])
+            /*   .sort(null)*/
+               .value(function(d){
+                   return d.weight;
+               })
+               .padding(2);
+
+       d3.json("data.json",function(error,data){
+
+           console.log(data);
+           var nodes=pack.nodes(data);
+           console.log(nodes);
+           var bubbles=svg.selectAll(".bubbles")
+                   .data(nodes.filter(function(d){return !d.children;}))
+                   .enter()
+                   .append("g")
+                   .attr("class","bubbles");
+
+
+           bubbles.append("circle")
+                   .attr("cx",function(d){
+                       return d.x;
+                   })
+                   .attr("cy",function(d){
+                       return d.y;
+                   })
+                   .attr("r",function(d){
+                       return d.r;
+                   })
+                   .attr("class","circle")
+                   .attr("fill","rgb(31, 119, 180)")
+                   .attr("opacity",0.4);
+
+
+           bubbles.append("text")
+                   .attr("x",function(d){
+                       return d.x;
+                   })
+                   .attr("y",function(d){
+                       return d.y;
+                   })
+                   .attr("class","text")
+                   .style("text-anchor","middle")
+                   .text(function(d){
+                       return d.name;
+                   });
+
+
+       })
+
+
+
+   </script>
+
+</body>
+</html>

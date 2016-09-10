@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+        .grid_path{
+            stroke:grey;
+            stroke-width:1;
+            fill:none;
+            opacity: 1;
+        }
+
+        .map_path {
+            stroke:black;
+            stroke-width: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+   <script>
+
+       var width  = 900;
+       var height = 700;
+       var speed = 0.02;
+       var startTime = Date.now();
+       var currentTime = Date.now();
+       var svg = d3.select("body").append("svg")
+               .attr("width", width)
+               .attr("height", height);
+       var projection = d3.geo.orthographic()
+               .scale(300)
+               .rotate([0,-15])
+               .clipAngle(90);
+       var graticule = d3.geo.graticule();
+       var grid = graticule();
+       var path = d3.geo.path()
+               .projection(projection);
+       var color=d3.scale.category20();
+       console.log(grid);
+
+       var drag = d3.behavior.drag()
+               .on("drag", dragmove);
+
+       function dragmove() {
+
+
+           var Angelx =d3.event.x;
+           console.log(Angelx);
+
+           projection.rotate([Angelx,-15]);
+
+           svg.selectAll("path")
+                   .attr("d",path);
+       }
+
+       d3.json("world_605kb.json",function(error,data){
+
+
+           var map = svg.append("g")
+                   .attr("transform", "translate(" +50+ "," +50+ ")")
+                   .call(drag);
+
+
+           draw(map,data);
+
+
+
+
+
+
+
+
+           /*d3.timer(function() {
+
+               currentTime = Date.now();
+
+               projection.rotate([speed * (currentTime - startTime),0]).clipAngle(90);
+
+               map.select("#grid_id")
+                       .attr("d",path);
+
+               map.selectAll(".map_path")
+                       .attr("d",path);
+
+           });*/
+
+
+
+
+
+
+
+
+       });
+
+
+       function draw(mymap,root){
+
+           mymap.append("path")
+                   .datum(grid)
+                   .attr("d",path)
+                   .attr("id","grid_id")
+                   .attr("class","grid_path");
+
+           mymap.selectAll(".map_path")
+                   .data(root.features)
+                   .enter()
+                   .append("path")
+                   .attr("d",path)
+                   .attr("class","map_path")
+                   .attr("fill",function(d,i){return color(i);})
+                   .on("mouseover",function(){
+                       d3.select(this)
+                               .attr("fill","yellow");
+                   })
+                   .on("mouseout",function(d,i){
+                       d3.select(this)
+                               .attr("fill",color(i))
+                   });
+
+       }
+
+       /*function mytimer(mymap){
+
+           currentTime = Date.now();
+
+           projection.rotate([speed * (currentTime - startTime), -15]).clipAngle(90);
+
+           mymap.select("#grid_id")
+                   .attr("d",path);
+
+           mymap.selectAll(".map_path")
+                   .attr("d",path);
+       }*/
+
+
+   </script>
+
+</body>
+</html>

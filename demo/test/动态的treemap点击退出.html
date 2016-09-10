@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="../d3/jquery-1.8.2.js"> </script>
+    <style>
+
+        .nodeRect {
+            stroke: white;
+            stroke-width: 2px;
+        }
+
+        .nodeName {
+            fill: white;
+            font-size: 12px;
+            font-family: simsun;
+        }
+
+    </style>
+</head>
+<body>
+
+<script>
+
+    var dataset={name:"总数",children:[{name:"courseNum",value:12},
+                                      {name:"teacherNum",value:13},
+                                      {name:"siteNum",value:14},
+                                      {name:"studentNum",value:20},
+                                      {name:"resourceNum",value:15}]};
+    var width=1550;
+    var height=850;
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var treemap=d3.layout.treemap()
+            .size([width,height])
+            .value(function(d){return d.value});
+
+    var color=d3.scale.ordinal()
+            .domain(d3.range(8))
+            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+    var nodes=treemap.nodes(dataset);
+    console.log(nodes);
+  /*d3.json("city.json",function(error,root){*/
+
+
+        console.log(nodes);
+
+        var groups=svg.selectAll("g")
+                .data(nodes.filter(function(d){return !d.children}))//filter过滤掉非叶子节点，此时返回的nodes里面数据减少了
+                .enter()
+                .append("g");
+
+        var rects=groups.append("rect")
+                .attr("class","nodeRect")
+                .attr("fill",function(d,i){
+                    return color(i);
+                })
+                .transition()
+                .delay(function(d,i){
+                    return i*500;
+                })
+                .duration(1000)
+                .attrTween("x",function(d){
+                    var interpolate = d3.interpolate(0, d.x);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+                .attrTween("y",function(d){
+                    var interpolate = d3.interpolate(0, d.y);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+                /*.attr("x",function(d){ return d.x; })*/
+               /* .attr("y",function(d){ return d.y; })*/
+
+                .attrTween("width",function(d){
+                    var interpolate = d3.interpolate(0, d.dx);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+             /*   .attr("width",function(d){ return d.dx; })*/
+                .attrTween("height",function(d){
+                    var interpolate = d3.interpolate(0, d.dy);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                });
+                /*.attr("height",function(d){ return d.dy; })*/
+
+        groups.on("click",function(d,i){
+
+          /*  groups.each(function(d,j){
+                if(j!=i){
+                   *//* d3.select(this).remove();*//*
+                    d3.select(this).attr("opacity",0);
+
+                }
+            });
+
+
+
+
+*/
+          /*  d3.select(this).select("rect")
+                    .transition()
+                    .duration(1000)
+                    .attr("x",0)
+                    .attr("y",0)
+                    .attr("width",width)
+                    .attr("height",height);
+           */
+
+
+
+         var newRect=svg.append("rect")
+                    .attr("id","newRect")
+                    .attr("fill",function(){
+                        return color(i);
+                    })
+                    .attr("x",function(){
+                        return d.x;
+                    })
+                    .attr("y",function(){
+                        return d.y;
+                    })
+                    .attr("width",function(){
+                        return d.dx;
+                    })
+                    .attr("height",function(){
+                        return d.dy;
+                    });
+
+            newRect.transition()
+                    .duration(500)
+                    .attr("x",0)
+                    .attr("y",0)
+                    .attr("width",width)
+                    .attr("height",height);
+
+          /*  setTimeout(function(){window.location.href="http://localhost:63342/myProject/test/%E6%B5%8B%E8%AF%95.html";},500);
+            newRect.on("click",function(){
+                d3.select(this).remove();
+            });*/
+
+            newRect.on("click",function(){
+
+                d3.select(this)
+                        .transition()
+                        .duration(500)
+                        .attr("x",function(){
+                            return d.x;
+                        })
+                        .attr("y",function(){
+                            return d.y;
+                        })
+                        .attr("width",function(){
+                            return d.dx;
+                        })
+                        .attr("height",function(){
+                            return d.dy;
+                        })
+                        .remove();
+            })
+
+        });
+
+      /* var newRect=svg.select("#newRect")
+               .on("click",function(d){
+
+                   console.log("aaaa");
+                   d3.select(this).remove();
+               });*/
+
+      /*  var text = groups.append("text")
+                .attr("class", "nodeName")
+                .attr("x", function (d) {
+                    return d.x + d.dx / 2;
+                })
+                .attr("y", function (d) {
+                    return d.y + d.dy / 2;
+                })
+                .attr("dx","-2em")
+                .text(function (d) {
+                    return d.name + " " + d.value;
+                });*/
+
+/*    })*/
+
+</script>
+
+
+</body>
+</html>

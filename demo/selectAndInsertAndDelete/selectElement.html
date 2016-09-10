@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+  <p>Apple</p>
+  <p>Pear</p>
+  <p>Banana</p>
+  <script>
+
+      /*var body=d3.select("body");
+      var p1=body.select("p");
+      p1.style("color","red");*/
+
+      /*var body=d3.select("body");
+      var p2=body.select("#two");
+      p2.style("color","red");*/
+
+      /*var body=d3.select("body");
+      var p=body.selectAll(".two");
+      p.style("color","red");
+*/
+
+
+      var body=d3.select("body");
+      var p=body.selectAll("p");
+      p.style("color",function(d,i){
+          if(i==0){
+              return "red";
+          }
+      });
+
+  </script>
+</body>
+</html>

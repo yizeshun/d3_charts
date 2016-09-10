@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+
+
+    function Tooltip(a,b){
+        this.a=a;
+        this.b=b;
+    }
+
+    Tooltip.prototype.content=function(content){
+
+        this.content=content;
+        return this;
+    };
+    Tooltip.prototype.position=function(x,y){
+
+        this.position.x=x;
+        this.position.y=y;
+        return this;
+    };
+    Tooltip.prototype.show=function(){
+
+        this.display="block";
+        return this;
+    };
+    Tooltip.prototype.hide=function(){
+
+        this.display="none";
+        return this;
+    };
+
+
+
+    var TooltipHelper=(function(){
+
+        var instance;
+
+        return {
+
+            showTooltip: function (x, y, content) {
+                if (!instance) {
+                    instance = new Tooltip(undefined, {
+                        typeClass: "gis-tooltip"
+                    })
+                }
+                instance.content(content).position(x, y).show();
+                console.log(instance);
+            },
+
+            hideTooltip: function () {
+                instance && instance.hide();
+                console.log(instance);
+            }
+
+        }
+
+
+    })();
+
+    TooltipHelper.showTooltip();
+    TooltipHelper.hideTooltip();
+
+
+
+</script>
+</body>
+</html>

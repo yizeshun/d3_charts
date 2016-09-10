@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>test</title>
+	<script src="../d3/d3.js"></script>
+</head>
+<body>
+
+<button onclick="rotate()">旋转</button>
+
+
+<script>
+	var w = 200;
+	var h = 200;
+
+	var R = 100;
+	var r = 40;
+	var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+	var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+
+	var inner_padding_angle = 1; // 每个小弧在顺时针方向上的间隔
+	var outer_padding_angle = 9; // 每个大类在顺时针方向上的间隔
+	var elem_angle = 15;         // 每个弧的弧度，值为角度，需要转换
+
+
+	// 角度转弧度
+	function degToRadian(deg){
+		var radian = deg/180 * Math.PI;
+		return radian;
+	}
+
+	var ipa = degToRadian(inner_padding_angle);
+	var opa = degToRadian(outer_padding_angle);
+	var ea  = degToRadian(elem_angle);
+
+	var svg = d3.select('body')
+		.append('svg')
+		.attr('width',w)
+		.attr('height',h);
+
+	var bgRect = svg.append('rect')
+		.attr('width',w)
+		.attr('height',h)
+		.attr('x',0)
+		.attr('y',0)
+		.attr('stroke','black')
+		.attr('fill','none');
+
+	var arc = d3.svg.arc()
+		.startAngle(0)
+		.endAngle(ea);
+
+	var box = svg.append('g')
+		.attr('transform','translate('+w/2+','+h/2+')');
+
+	/*var A = box.append('g')
+		.attr('class','A');
+
+	var A1 = A.append('g')
+		.attr('class','A1');*/
+
+	// A1.append('path')
+	// 	.attr('d',arc)
+	// 	.attr('fill','red');
+
+	// arc.innerRadius(r+er+2)
+	// 	.outerRadius(r+er*2+2);
+
+	// A1.append('path')
+	// 	.attr('d',arc)
+	// 	.attr('fill','red');
+
+	function drawA(A1){
+		for(var i=0;i<4;i++){
+			arc.innerRadius(r+er*i+pr*i)
+				.outerRadius(r+er*(i+1)+pr*i);
+
+			A1.append('path')
+				.attr('d',arc)
+				.attr('fill','red');
+
+		}
+	}
+
+	function drawPart(partName,startAngle){
+		var A = box.append('g')
+			.attr('class',partName);
+
+			for(var i=0;i<4;i++){
+				var A1 = A.append('g')
+					.attr('class',partName+i);
+
+				arc.startAngle(startAngle+ea*i+ipa*i)
+					.endAngle(startAngle+ea*(i+1)+ipa*i);
+
+				drawA(A1);
+			}
+	}
+
+	drawPart('A',0);
+	drawPart('B',degToRadian(72));
+	drawPart('C',degToRadian(72*2));
+	drawPart('D',degToRadian(72*3));
+	drawPart('E',degToRadian(72*4));
+
+    function rotate(){
+
+        box.attr('transform','translate('+w/2+','+h/2+') rotate(60,0,0)');
+
+
+    }
+
+</script>
+</body>
+</html>

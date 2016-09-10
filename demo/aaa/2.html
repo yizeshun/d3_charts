@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"></script>
+    <style>
+
+       /* .rect{
+            fill:yellow;
+
+            stroke:black;
+            opacity: 1;
+        }*/
+
+
+    </style>
+</head>
+<body>
+
+  <script>
+
+      var width=1500;
+      var height=1000;
+
+      xscale=d3.scale.linear()
+              .domain([30,60])
+              .range([50,800]);
+      yscale=d3.scale.linear()
+              .domain([30,60])
+              .range([20,800]);
+
+      d3.csv("fig5data.csv",function(error,data){
+         /* console.log(data);*/
+          console.log(data);
+          draw(data);
+      });
+
+      function draw(root){
+
+          var svg=d3.select("body")
+                  .append("svg")
+                  .attr("width",width)
+                  .attr("height",height);
+
+          var zoom=d3.behavior.zoom()
+                  .scaleExtent([0.1,10])
+                  .on("zoom",zoomed);
+
+          var allg=svg.selectAll(".g")
+                  .data(root)
+                  .enter()
+                  .append("g")
+                  .attr("x",function(d){
+                      return xscale(d.x);
+                  })
+                  .attr("y",function(d){
+                      return yscale(d.y);
+                  });
+
+
+
+
+
+          /*var rect=svg.append("rect")
+                  .attr("x",0)
+                  .attr("y",0)
+                  .attr("width",800)
+                  .attr("height",800)
+                  .attr("opacity",0)
+                  .call(zoom);*/
+
+          var rects=allg
+
+                  .append("rect")
+                  .attr("class","rect")
+                  .attr("x",function(d){
+                      return xscale(d.x)/8;
+                  })
+                  .attr("y",function(d){
+                      return yscale(d.y)/8;
+                  })
+                  .attr("width",function(d){
+                      var str= d.n;
+                      return str.length*6+8;
+                  })
+                  .attr("height",20)
+                  .attr("rx",10)
+                  .attr("ry",10)
+                  .style("fill",function(d){
+                     if(d.a==1){
+                         return "#FAFD94";
+                     }
+                     if(d.a==2){
+                         return "#FCD1E5";
+                     }
+                     if(d.a==3){
+                         return "#B1FFD8";
+                     }
+                     if(d.a==4){
+                         return "#C8B8FF";
+                     }
+                     if(d.a==5){
+                         return "#83FF8D";
+                     }
+
+                  })
+                  .style("stroke","black");
+
+
+
+
+
+
+
+
+          var texts=allg
+                  .append("text")
+                  .attr("x",function(d){
+                      return xscale(d.x)/8+4;
+                  })
+                  .attr("y",function(d){
+                      return yscale(d.y)/8+14;
+                  })
+                  .style("font-size",12)
+                  .style("fill","black")
+                  .style("opacity",1)
+                  .text(function(d){
+                      return d.n;
+                  });
+
+
+
+          var rect=svg.append("rect")
+                  .attr("class","rectsingle")
+                  .attr("x",0)
+                  .attr("y",0)
+                  .attr("width",width)
+                  .attr("height",height)
+                  .attr("opacity",0)
+                  .call(zoom);
+
+
+
+
+
+      }
+      function zoomed(){
+          d3.selectAll("g")
+                  .attr("transform","translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+      }
+
+
+
+
+
+  </script>
+
+
+
+</body>
+</html>

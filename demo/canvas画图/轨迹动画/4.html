@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+    <style type="text/css">
+        canvas{border:dashed 2px #CCC;
+        background-color: black;}
+    </style>
+</head>
+<body>
+<canvas id="myCanvas" width="600" height="600">
+    Your browser does not support the canvas element.
+</canvas>
+
+   <script>
+
+       var canvas=document.getElementById("myCanvas");
+       var context=canvas.getContext("2d");
+       var particlePath=4;
+       var particle;
+       var gravity=0.1;
+
+       function Particle(){
+
+           this.path=[];
+           this.reset();
+
+       }
+
+       Particle.prototype.reset=function(){
+           this.x=300;
+           this.y=0;
+           this.vy=0.1;
+           this.path.length=0;
+
+       };
+
+       Particle.prototype.step=function(){
+
+           this.path.unshift([this.x,this.y]);
+
+           if(this.path.length>particlePath){
+               this.path.pop();
+           }
+
+           this.vy+=gravity;
+           this.y+=this.vy;
+
+           if(this.y>610){
+               this.reset();
+           }
+
+       }
+
+       Particle.prototype.draw=function(){
+           context.beginPath();
+           context.moveTo(this.x,this.y);
+           for(var i=0;i<this.path.length;i++){
+               var point=this.path[i];
+               context.lineTo(point[0],point[1]);
+           }
+           context.strokeStyle="red";
+           context.stroke();
+
+       }
+
+       function init(){
+           particle=new Particle();
+           loop();
+       }
+
+       function draw(){
+           context.fillRect(0,0,600,600);
+           particle.step();
+           particle.draw();
+       }
+
+       function loop(){
+           requestAnimationFrame( loop );
+           draw();
+       }
+
+       init();
+   </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+<script>
+
+    function Chart() {
+        var width = 720; // default width
+
+        function my() {
+
+            alert(width);
+            // generate chart here, using `width` and `height`
+        }
+
+        my.width = function(value) {
+            if (!arguments.length) return width;
+            width = value;
+            return my;
+        };
+
+        return my;
+    }
+
+    var chart1=new Chart();
+
+    chart1.width(800);
+
+    chart1();
+
+</script>
+</body>
+</html>

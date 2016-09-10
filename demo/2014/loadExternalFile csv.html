@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>svg3</title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+        .xaxis path,
+        .xaxis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .yaxis path,
+        .yaxis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .xaxis text {
+            font-family: sans-serif;
+            font-size: 11px;
+            color: white;
+
+
+        }
+        .yaxis text {
+            font-family: sans-serif;
+            font-size: 11px;
+            color:white;
+
+        }
+
+        .inner_line path,
+        .inner_line line {
+            fill: none;
+            stroke:grey;
+            shape-rendering: crispEdges;
+        }
+
+    </style>
+</head>
+<body style="text-align: center" >
+
+<div>
+<p style="text-align: center" >英语</p>
+<script type="text/javascript">
+
+
+    var  w = 800;
+    var  h = 500;
+    var  padding=50;
+
+
+    d3.csv("text1.csv",function(error,dataset){
+
+           console.log(dataset);
+
+
+    var yscale=d3.scale.linear();
+        yscale.domain([0,1])
+              .range([h-padding,padding]);
+
+//        yscale.domain([0,d3.max(dataset,function(d){return parseFloat(d.英语);})])
+//              .range([h-padding,padding]);
+    var ordinalDate=[];
+        for(j=0;j<dataset.length;j++){
+            ordinalDate.push(dataset[j].班级);
+            console.log(dataset[j].班级);
+        }
+
+    var xscale=d3.scale.ordinal();
+        xscale.domain(ordinalDate)
+              .rangeRoundBands([padding,w-padding],0.05);
+//        xscale.domain(d3.range(dataset.length))
+//              .rangeRoundBands([padding,w-padding],0.05);
+
+
+    var formatAsPercentage = d3.format(".1%");
+
+
+
+    var xAxis=d3.svg.axis();
+        xAxis.scale(xscale)
+             .orient("bottom");
+
+    var yAxis=d3.svg.axis();
+        yAxis.scale(yscale)
+             .tickFormat(formatAsPercentage)
+             .orient("left");
+
+
+
+
+    var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+
+        svg.selectAll("text")
+                .data(dataset)
+                .enter()
+                .append("text")
+                .text(function(d){
+                    return d.英语;
+                })
+                .attr("x", function(d, i) {
+                    return xscale(i+1)+xscale.rangeBand()/2;
+                })
+                .attr("y", function(d) {
+                    return (yscale(parseFloat(d.英语)/100))-5;
+                })
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "11px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+
+//x方向的线
+
+        var yInner = d3.svg.axis()
+                .scale(yscale)
+                .tickSize(-(w-padding*2),0,0)
+                .tickFormat("")
+                .orient("left")
+                .ticks(10);
+
+
+
+
+        svg.append("g")
+                .attr("class","inner_line")
+                .attr("transform", "translate("+padding+",0)")
+                .call(yInner);
+
+
+          svg.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("x", function(d,i){
+                return xscale(i+1);
+            })
+            .attr("y", function(d){
+                return yscale(parseFloat(d.英语)/100);
+            })
+            .attr("width", xscale.rangeBand())
+            .attr("height", function(d){
+                return h-yscale(parseFloat(d.英语)/100)-padding;
+
+            })
+            .attr("fill", function(d) {
+                return "rgb(0, 0, "+ parseFloat(d.英语)*10+")";
+            });
+
+
+
+
+        svg.append("g")
+                   .attr("class", "xaxis")
+                   .attr("transform", "translate(0," + (h - padding) + ")")
+                   .call(xAxis);
+
+
+        svg.append("g")
+                .attr("class","yaxis")
+                .attr("transform","translate("+padding+",0)")
+                .call(yAxis);
+
+
+
+
+
+
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</div>
+</body>
+</html>

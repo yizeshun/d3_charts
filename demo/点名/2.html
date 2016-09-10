@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>svg3</title>
+    <script src="../d3/d3.js"> </script>
+
+</head>
+<body bgcolor="black">
+
+<input type="button" id="p1" value="已学">
+<input type="button" id="p2" value="未学">
+<script type="text/javascript">
+    var  w = 600;
+    var  h = 600;
+    var dataset = [ 0, 0 ];
+    var pie = d3.layout.pie();
+    var outerRadius = w / 3;
+    var innerRadius = 0.01;
+    var color = d3.scale.category10();
+    var arc = d3.svg.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+    console.log(pie(dataset));
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+
+
+
+    draw();
+
+
+    createTitle();
+
+    d3.select("#p1")
+            .on("click",function(){
+                 dataset[0]++;
+                 console.log(dataset[0]);
+                 draw();
+            });
+
+    d3.select("#p2")
+            .on("click",function(){
+                dataset[1]++;
+                console.log(dataset[1]);
+                draw();
+            });
+
+    function draw() {
+
+
+        var update_g=svg.selectAll("g.arc")
+                .data(pie(dataset));
+
+
+        var enter_g=update_g.enter();
+
+
+        var exit_g=update_g.exit();
+
+       //update部分
+       var arcs=update_g
+
+                .attr("transform", "translate(" + outerRadius + ", " + outerRadius
+                        + ")");
+
+        arcs.select("path")
+                .attr("fill", function(d, i) {
+                    return color(i);
+                })
+                .attr("d", function (d) {
+                    return arc(d);
+                })
+                .on("mouseover",function(d,i){
+                    d3.select(this)
+                            .style("fill","blue");
+
+
+                })
+                .on("mouseout",function(d,i){
+                    d3.select(this)
+                            .style("fill",color(i))
+                });
+        arcs.select("text")
+                .attr("transform", function(d) {
+                    return "translate(" + arc.centroid(d) + ")";
+                })
+                .attr("text-anchor", "middle")
+                .text(function(d) {
+                    return d.value;
+                });
+
+        //enter部分
+
+
+        var arcs2=enter_g.append("g")
+                .attr("class", "arc")
+                .attr("transform", "translate(" + outerRadius + ", " + outerRadius
+                        + ")");
+
+        arcs2.append("path")
+                .attr("fill", function(d, i) {
+                    return color(i);
+                })
+                .attr("d", function (d) {
+                    return arc(d);
+                })
+                .on("mouseover",function(d,i){
+                    d3.select(this)
+                            .style("fill","blue");
+
+
+                })
+                .on("mouseout",function(d,i){
+                    d3.select(this)
+                            .style("fill",color(i))
+                });
+        arcs2.append("text")
+                .attr("transform", function(d) {
+                    return "translate(" + arc.centroid(d) + ")";
+                })
+                .attr("text-anchor", "middle")
+                .text(function(d) {
+                    return d.value;
+                });
+
+        //exit()部分
+        exit_g.remove();
+
+
+    }
+
+
+
+    function createTitle(){
+
+        var title1=svg.append("g")
+                .attr("transform","translate(450,300)");
+
+        title1.append("rect")
+                .attr("width",20)
+                .attr("height",10)
+                .style("fill","white");
+
+        title1.append("text")
+                .text("aaa")
+                .attr("dx",30)
+                .attr("dy",10)
+                .style("fill","white");
+
+
+        var title2=svg.append("g")
+                .attr("transform","translate(450,330)");
+
+        title2.append("rect")
+                .attr("width",20)
+                .attr("height",10)
+                .style("fill","white");
+
+        title2.append("text")
+                .text("aaa")
+                .attr("dx",30)
+                .attr("dy",10)
+                .style("fill","white");
+    }
+
+
+
+</script>
+
+
+
+
+
+</body>
+</html>

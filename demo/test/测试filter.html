@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+<input type="button" value="重画" onclick="redraw()"></input>
+
+<script>
+
+    var width=600;
+    var height=600;
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("class","svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var outerRadius = width/2;
+    var innerRadius = width/4;
+
+    var arc = d3.svg.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+
+    var color = d3.scale.category10();
+
+  /*  var dataset=[1,3,5,6,8,12,15,36,25];
+    var b=dataset.filter(function(d){
+        return d<10;
+    });
+    var c=b.map(function(d,i){
+        return {label:i, value: d}
+    });
+    console.log(c);*/
+
+   /* var secondSet=d3.set();
+    secondSet.add(1);
+    secondSet.add(3);
+    secondSet.add(3);
+    secondSet.add(4);
+    secondSet.add(6);
+    secondSet.forEach(function(d){
+        console.log("set"+d);
+    });*/
+
+   /*var data0=svg.selectAll("circle")
+            .data(b)
+           .enter().append("circle");
+
+
+   var aaaa=svg.selectAll("circle")
+           .data();
+    console.log(aaaa);*/
+   var pie = d3.layout.pie();
+   var dataset1 = [2, 10];
+   dataset1=pie(dataset1);
+   var dataset2 = [25, 65];
+   dataset2=pie(dataset2);
+   console.log(dataset1);
+
+   var arcs=svg.selectAll(".arc")
+           .data(dataset1)
+           .enter()
+           .append("g")
+           .attr("transform","translate(" + outerRadius + ", " + outerRadius
+                   + ")");
+
+    console.log("test");
+    arcs.each(function(d){
+        console.log(this._current);
+    });
+
+    arcs.append("path")
+            .
+            attr("d",function(d){return arc(d); })
+            .attr("fill",function(d,i){return color(i)});
+
+
+   function redraw(){
+
+       var newArcs=svg.selectAll("path")
+               .data(dataset2)
+               .transition()
+               .duration(1000)
+               .attrTween("d",function(d){
+                   var interpolate = d3.interpolate(dataset1[0], d);
+                   return function(t) {
+                       var _this_current = interpolate(t);
+                       return arc(_this_current);
+                   };
+
+
+
+               })
+               .attr("fill",function(d,i){return color(i)});
+
+
+   }
+
+
+
+ /*  var interpolate=d3.interpolate(dataset[0],dataset[1]);
+   console.log(interpolate(0.5));
+*/
+
+
+</script>
+</body>
+</html>

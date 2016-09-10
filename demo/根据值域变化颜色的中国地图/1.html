@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script></head>
+    <script src="../d3/topojson.v1.min.js"> </script></head>
+</head>
+<body>
+
+     <script>
+
+         var width=700,
+             height=700;
+         var svg=d3.select("body")
+                 .append("svg")
+                 .attr("width",width)
+                 .attr("height",height);
+         var projection=d3.geo.mercator()
+                 .center([107,31])
+                 .scale(600)
+                 .translate([width/2,height/2]);
+         var path=d3.geo.path().projection(projection);
+         d3.json("china.topojson",function(error,toproot){
+
+             if(error){
+                 return console.error(error);
+             }
+             console.log(toproot);
+             var georoot=topojson.feature(toproot,toproot.objects.china);
+             console.log(georoot);
+             var china=svg.append("g");
+             var provinces=china.selectAll("path")
+                     .data(georoot.features)
+                     .enter()
+                     .append("path")
+                     .attr("class","province")
+                     .style("fill","#ccc")
+                     .attr("d",path);
+             d3.json("tourism.json",function(error,valuedata){
+                 console.log(valuedata);
+                 var values=[];
+                 for(i=0;i<valuedata.provinces.length;i++){
+                      var name=valuedata.provinces[i].name;
+                      var value=valuedata.provinces[i].value;
+                      values[name]=value;
+                 }
+                 var maxvalue = d3.max(valuedata.provinces, function(d){ return d.value; });
+                 var minvalue = d3.min(valuedata.provinces, function(d){ return d.value; });
+
+                 var linear=d3.scale.linear()
+                         .domain([minvalue,maxvalue])
+                         .range([0,1]);
+                 var a=d3.rgb(0,255,255);
+                 var b=d3.rgb(0,0,255);
+                 var computeColor=d3.interpolate(a,b);
+                 provinces.style("fill",function(d){
+                     var t=linear(values[d.properties.name]);
+                     var color=computeColor(t);
+                     return color.toString();
+                 });
+
+                 var defs=svg.append("defs");
+                 var linearGradient=defs.append("linearGradient")
+                         .attr("id","linearColor")
+                         .attr("x1","0%")
+                         .attr("y1","0%")
+                         .attr("x2","100%")
+                         .attr("y2","0%");
+
+                 var stop1 = linearGradient.append("stop")
+                         .attr("offset","0%")
+                         .style("stop-color",a.toString());
+
+                 var stop2 = linearGradient.append("stop")
+                         .attr("offset","100%")
+                         .style("stop-color",b.toString());
+
+                 var colorRect = svg.append("rect")
+                         .attr("x", 20)
+                         .attr("y", 490)
+                         .attr("width", 140)
+                         .attr("height", 30)
+                         .style("fill","url(#" + linearGradient.attr("id") + ")");
+
+                 var minValueText = svg.append("text")
+                         .attr("class","valueText")
+                         .attr("x", 20)
+                         .attr("y", 490)
+                         .attr("dy", "-0.3em")
+                         .text(function(){
+                             return minvalue;
+                         });
+
+                 var maxValueText = svg.append("text")
+                         .attr("class","valueText")
+                         .attr("x", 160)
+                         .attr("y", 490)
+                         .attr("dy", "-0.3em")
+                         .text(function(){
+                             return maxvalue;
+                         });
+
+
+
+             })
+
+         });
+
+         d3.xml("southchinasea.svg",function(error,xmlDocument){
+
+             console.log(xmlDocument);
+             var hehe=svg.html();
+             console.log("heheh"+hehe);
+         })
+
+
+
+     </script>
+
+
+</body>
+</html>

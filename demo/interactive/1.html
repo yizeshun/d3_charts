@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+       <script>
+
+           var svg=d3.select("body")
+                   .append("svg")
+                   .attr("width",280)
+                   .attr("height",300);
+
+
+           var circle=svg.append("circle")
+                   .attr("cx",100)
+                   .attr("cy",150)
+                   .attr("r",40)
+                   .style("fill","blue");
+
+           circle.on("click",function(){
+                 console.log(d3.event);
+           })
+
+       </script>
+
+
+
+</body>
+</html>

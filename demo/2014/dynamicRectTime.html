@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"></script>
+    <style>
+        .chart rect{
+            fill:steelblue;
+            stroke: white;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript">
+
+
+//      var w=40;
+//      var h=400;
+//      var data = [4, 8, 15, 16, 23, 42, 8, 15, 16, 23, 42, 8, 15, 16, 23, 42, 8, 15, 16, 23, 42];
+//    var xscale=d3.scale.linear()
+//            .domain([0,1])
+//            .range([0,w]);
+//    var yscale=d3.scale.linear()
+//            .domain([0,50])
+//            .rangeRound([0,h]);
+//    var chart=d3.select("body").append("svg")
+//            .attr("class","chart")
+//            .attr("width",w*data.length)
+//            .attr("height",h);
+//    chart.selectAll("rect")
+//            .data(data)
+//            .enter()
+//            .append("rect")
+//            .attr("x",function(d,i){return xscale(i)})
+//            .attr("y",function(d){return h-yscale(d)})
+//            .attr("width", w)
+//            .attr("height", function(d) { return yscale(d); });
+//
+//    setInterval(function(){
+//          data.push(data.shift());
+//          console.log(data);
+//          redraw1();
+//    },1000);
+//
+//    function redraw1(){
+//        chart.selectAll("rect")
+//                .data(data)
+//                .transition()
+//                .duration(1000)
+//                .attr("y", function(d) { return h - yscale(d)})
+//                .attr("height", function(d) { return yscale(d)})
+//
+//    }
+    var data=[];
+    var count=0;
+    var timer=setInterval(function(){
+          if(count==20){
+              clearInterval(timer);
+              chartInit();
+          }
+          data.push({
+              "value": parseInt(100 * Math.random()),
+              "time": +new Date()
+          });
+          count+=1;
+    },10);
+
+      function chartInit() {
+          var w=40;
+          var h=400;
+          var xscale=d3.scale.linear()
+                  .domain([0,1])
+                  .range([0,w]);
+          var yscale=d3.scale.linear()
+                  .domain([0,100])
+                  .rangeRound([0,h]);
+          var chart=d3.select("body").append("svg")
+                  .attr("class","chart")
+                  .attr("width",w*data.length)
+                  .attr("height",h);
+
+          function redraw() {
+
+              var rect = chart.selectAll("rect")
+                      .data(data, function (d) {
+                          return d.time;
+                      });
+
+
+              rect.enter().insert("rect", "line")
+                      .attr("x", function (d, i) {
+                          return xscale(i);
+                      })
+                      .attr("y", function (d) {
+                          return h - yscale(d.value);
+                      })
+                      .attr("width", w)
+                      .attr("height", function (d) {
+                          return yscale(d.value);
+                      });
+
+
+              rect.transition()
+                      .duration(1000)
+                      .attr("x", function (d, i) {
+                          return xscale(i);
+                      });
+
+
+              rect.exit()
+                      .remove();
+          }
+
+          setInterval(function () {
+              data.shift();
+              data.push({
+                  'value' : parseInt(100 * Math.random()),
+                  'time' : +new Date()
+              });
+              redraw()
+          }, 1000);
+
+
+
+      }
+</script>
+
+</body>
+</html>

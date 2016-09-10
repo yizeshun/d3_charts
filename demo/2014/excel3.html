@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>画一个折线图</title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<style type="text/css">
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+
+    .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+
+     }
+
+    .inner_line path,
+    .inner_line line {
+        fill: none;
+        stroke:#E7E7E7;
+        shape-rendering: crispEdges;
+    }
+</style>
+<body style="text-align: center">
+<script type="text/javascript">
+    var w=800;
+    var h=500;
+    var padding=60;
+    var divideLevel=[];
+    var difficultLevel=[];
+    var ordinalDate=[];
+    var formatAsPercentage = d3.format("0.2%f");
+    //获取数据
+    d3.csv("text2.csv",function(error,object) {
+
+        console.log(object);
+
+        object.forEach(function(d){
+
+            difficultLevel.push(parseFloat(d.难度)/100);
+            ordinalDate.push(d.题号);
+            divideLevel.push(parseFloat(d.区分度)/100);
+
+
+
+        });
+
+   // 定义画布
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",w)
+            .attr("height",h);
+
+    //添加背景
+    svg.append("g")
+            .append("rect")
+            .attr("x",0)
+            .attr("y",0)
+            .attr("width",w)
+            .attr("height",h)
+            .style("fill","#fff")
+            .style("stroke-width",2)
+            .style("stroke","#E7E7E7");
+
+   //横坐标轴比例尺
+    var xScale=d3.scale.linear()
+            .domain([0,object.length-1])
+            .range([padding,w-padding]);
+
+   //纵坐标轴比例尺
+    var yScale = d3.scale.linear()
+            .domain([0,1])
+            .range([h-padding,padding]);
+
+    //定义横轴
+    var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(object.length);
+
+    //定义纵轴
+
+    var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .tickFormat(formatAsPercentage)
+            .orient("left");
+
+
+
+    //x轴方向的线
+    var xInner = d3.svg.axis()
+            .scale(yScale)
+            .tickSize(-(w-padding*2),0,0)
+            .tickFormat("")
+            .orient("left")
+            .ticks(10);
+
+    svg.append("g")
+            .attr("class","inner_line")
+            .attr("transform", "translate("+padding+",0)")
+            .call(xInner);
+
+    //y轴方向的线
+     var yInner = d3.svg.axis()
+            .scale(xScale)
+            .tickSize(-(h-padding*2),0,0)
+            .tickFormat("")
+            .orient("bottom")
+            .ticks(object.length);
+
+     svg.append("g")
+            .attr("class","inner_line")
+            .attr("transform", "translate(0,"+(h-padding)+")")
+            .call(yInner);
+
+
+    //添加横轴
+    var xBar=svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (h - padding) + ")")
+            .call(xAxis)
+            .selectAll("text")
+            .text(function(i){return ordinalDate[i]})
+            .attr("transform", "rotate("+90+",-6,20)");
+//            .attr("writing-mode","tb");
+
+    //添加纵轴
+    var yBar=svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate("+padding+",0)")
+            .call(yAxis);
+
+    //添加标题
+
+    svg.append("circle")
+            .attr("cx",w/2-padding/2)
+            .attr("cy",padding/2)
+            .attr("r",5)
+            .attr("fill", function(d) {
+                    return "rgb(200,0, 0)";
+    });
+    svg.append("text")
+            .text("难度")
+            .attr("x",w/2-padding/2+10)
+            .attr("y",padding/2);
+
+    svg.append("circle")
+            .attr("cx",w/2+padding/2)
+            .attr("cy",padding/2)
+            .attr("r",5)
+            .attr("fill", function(d) {
+                   return "rgb(0,0,200)";
+    });
+    svg.append("text")
+            .text("区分度")
+            .attr("x",w/2+padding/2+10)
+            .attr("y",padding/2);
+
+    //添加折线
+    var line = d3.svg.line()
+       .interpolate("linear")
+            .x(function(d,i){return xScale(i);})
+            .y(function(d){return yScale(d)});
+
+
+    var path=svg.append("path")
+            .attr("d", line(difficultLevel))
+            .style("fill","#F00")
+            .style("fill","none")
+            .style("stroke-width",1)
+            .style("stroke","#F00")
+            .style("stroke-opacity",0.9);
+
+
+    var line1 = d3.svg.line()
+            .interpolate("linear")
+            .x(function(d,i){return xScale(i);})
+            .y(function(d){return yScale(d)});
+
+    var path1=svg.append("path")
+            .attr("d", line1(divideLevel))
+            .style("fill","#00f")
+            .style("fill","none")
+            .style("stroke-width",1)
+            .style("stroke","#00f")
+            .style("stroke-opacity",0.9);
+
+//  添加系列的小圆点
+    svg.selectAll("circle1")
+        .data(difficultLevel)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d,i) {
+               console.log(difficultLevel);
+                console.log(i);
+                console.log(xScale(i));
+            return xScale(i);
+        })
+        .attr("cy", function(d) {
+            return yScale(d);
+        })
+        .attr("r",5)
+        .attr("fill", function(d) {
+            return "rgb(200,0, 0)";
+        })
+        .append("title")
+        .text(function(d,i){
+                return "系列“难度系数”"+"点"+(i+1)+
+                        "\n"+"值"+formatAsPercentage(d);
+        });
+
+    svg.selectAll("circles")
+       .data(divideLevel)
+       .enter()
+       .append("circle")
+       .attr("cx", function(d,i) {
+            return xScale(i);
+       })
+       .attr("cy", function(d) {
+            return yScale(d);
+        })
+       .attr("r",5)
+       .attr("fill","rgb(0,0, 200)")
+       .append("title")
+       .text(function(d,i){
+             return "系列“难度系数”"+"点"+(i+1)+
+                     "\n"+"值"+formatAsPercentage(d);
+       });
+
+
+
+
+    });
+
+</script>
+
+</body>
+</html>

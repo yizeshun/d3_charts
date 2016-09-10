@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+<script>
+
+    var width=900;
+    var height=600;
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height)
+            .append("g");
+
+    svg.append("g")
+            .attr("class","slice");
+
+    svg.append("g")
+            .attr("class","lables");
+
+
+    var radius=radius = Math.min(width, height) / 2;
+
+    var pie = d3.layout.pie().value(function(d){return d.num});
+
+    var arc = d3.svg.arc()
+            .outerRadius(radius * 0.5)
+            .innerRadius(0);
+
+    svg.attr("transform", "translate(" + width / 3 + "," + height / 3 + ")");
+
+    var color = d3.scale.category10();
+
+    var dataset = [{"domain":1,"domainName":"本科生","num":3124},
+                   {"domain":2,"domainName":"研究生","num":88}];
+
+    var slice=svg.select(".slice").selectAll("path.slice")
+            .data(pie(dataset));
+
+    var enter=slice.enter()
+            .append("path")
+            .attr("class", "slice")
+            .style("fill", function(d,i) { return color(i); })
+            .each(function(d) {
+
+                this._current={};
+
+                this._current.startAngle= 0;
+
+                this._current.data= d.data;
+
+                this._current.value= d.value;
+
+                this._current.endAngle= 0;
+
+            });
+
+    slice=svg.select(".slice").selectAll("path.slice");
+
+
+    slice
+            .transition().duration(1000)
+            .attrTween("d", function(d) {
+                var interpolate = d3.interpolate(this._current, d);
+                var _this = this;
+                return function(t) {
+                    _this._current = interpolate(t);
+                    return arc(_this._current);
+                };
+            });
+
+
+    var text = svg.select(".lables").selectAll("text")
+            .data(pie(dataset));
+
+    var enterText = text.enter().append("text");
+
+
+
+    text = svg.select(".lables").selectAll("text")
+            .attr("opacity",0)
+            .attr(
+            "transform",
+            function(d) {
+                return "translate("
+                        + arc.centroid(d) + ")";
+            }).attr("text-anchor", "middle").text(
+            function(d) {
+                return d.value;
+            });
+
+    text
+
+            .transition().delay(500).duration(1000)
+            .style("opacity",1);
+
+
+    slice.on("click",function(d){
+
+        window.location.href="#";
+
+
+
+    })
+
+</script>
+</body>
+</html>

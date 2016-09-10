@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+
+        .nodeRect {
+            stroke: white;
+            stroke-width: 2px;
+
+
+        }
+
+        .nodeName {
+            fill: white;
+            font-size: 12px;
+            font-family: simsun;
+        }
+
+        body{background-color:cornflowerblue;}
+
+    </style>
+</head>
+<body>
+
+<script>
+
+    var dataset={name:"总数",children:[{name:"courseNum",value:12},
+                                      {name:"teacherNum",value:13},
+                                      {name:"siteNum",value:14},
+                                      {name:"studentNum",value:20},
+                                      {name:"resourceNum",value:15}]};
+    var width=600;
+    var height=600;
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var treemap=d3.layout.treemap()
+            .size([width,height])
+            .value(function(d){return d.value});
+
+    var color=d3.scale.category10();
+
+    var nodes=treemap.nodes(dataset);
+    console.log(nodes);
+  /*d3.json("city.json",function(error,root){*/
+
+
+        console.log(nodes);
+
+        var groups=svg.selectAll("g")
+                .data(nodes.filter(function(d){return !d.children}))//filter过滤掉非叶子节点，此时返回的nodes里面数据减少了
+                .enter()
+                .append("g");
+
+        groups.each(function(d){
+
+            this._current = d;
+        });
+
+        var rects=groups.append("rect")
+                .attr("class","nodeRect")
+                .attr("fill",function(d,i){
+                    return color(i);
+                })
+                .transition()
+                .delay(function(d,i){
+                    return i*500;
+                })
+                .duration(1000)
+                .attrTween("x",function(d){
+                    var interpolate = d3.interpolate(300, d.x);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+                .attrTween("y",function(d){
+                    var interpolate = d3.interpolate(300, d.y);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+                /*.attr("x",function(d){ return d.x; })*/
+               /* .attr("y",function(d){ return d.y; })*/
+
+                .attrTween("width",function(d){
+                    var interpolate = d3.interpolate(0, d.dx);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+             /*   .attr("width",function(d){ return d.dx; })*/
+                .attrTween("height",function(d){
+                    var interpolate = d3.interpolate(0, d.dy);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                });
+                /*.attr("height",function(d){ return d.dy; })*/
+
+
+
+        var text = groups.append("text")
+                .attr("class", "nodeName")
+                .attr("x", function (d) {
+                    return d.x;
+                })
+                .attr("y", function (d) {
+                    return d.y+d.dy-30 ;
+                })
+
+                .transition()
+                .delay(3000)
+                .duration(1000)
+                .attrTween("opacity",function(){
+                    var interpolate = d3.interpolate(0, 1);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return _this._current;
+                    };
+                })
+                .attr("dx","0.5em")
+                .attr("dy","1.5em")
+                .text(function (d) {
+                    return d.name + " " + d.value;
+                });
+
+/*    })*/
+
+</script>
+
+
+</body>
+</html>

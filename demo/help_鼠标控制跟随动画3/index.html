@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+	body {
+		font: 10px sans-serif;
+	}
+
+	.road {
+		fill: none;
+		stroke: #aaa;
+
+	}
+	.ball {
+		fill: #dfba49;
+		stroke: #dfba49;
+
+	}
+
+</style>
+<body></body>
+<script src="js/d3.v3.js"></script>
+<script>
+	//Dom
+	var svg,track;
+	//path
+	var track_r=200;
+	//坐标
+	var center_XY=[400,300];
+	//event
+	var drag;
+	var event_dom;
+	drag = d3.behavior.drag();
+	drag.on("drag",function(){
+		event_dom.setAngle(getAngle(center_XY[0],center_XY[1],d3.mouse(svg.node())[0],d3.mouse(svg.node())[1]));
+	});
+	function init(){
+		/*track_path="m 300,300 a 250,250 0 1 1 0,1z";*/
+		svg=d3.select("body").append("svg").attr({width:800,height:600});
+		track=svg.append("circle").attr("r",track_r).classed("road",true).attr("transform","translate("+center_XY+")");
+		createCircle({
+			r:5,
+			angle:0,
+			track:{
+				r:track_r,
+				center:center_XY
+			}
+
+		});
+		createCircle({
+			r:5,
+			angle:90,
+			track:{
+				r:track_r,
+				center:center_XY
+			}
+
+		});
+		createCircle({
+			r:5,
+			angle:180,
+			track:{
+				r:track_r,
+				center:center_XY
+			}
+
+		});
+		createCircle({
+			r:5,
+			angle:270,
+			track:{
+				r:track_r,
+				center:center_XY
+			}
+
+		});
+		createCircle({
+			r:5,
+			style:{fill:"#666"},
+			angle:70,
+			track:{
+				r:track_r,
+				center:center_XY
+			}
+
+		});
+	};
+ 	function createCircle(p){
+		var circle={};
+		circle.gdom=svg.append("g").attr({
+			"transform":"translate("+ p.track.center[0]+","+(p.track.center[1])+")"+
+			"rotate("+ (p.angle || 0)+")"
+		});
+		circle.cdom=circle.gdom.append("circle").attr({
+			"r": p.r||5,
+			"class": p.class||"ball",
+			"transform":"translate("+p.track.r+",0)"
+		})
+	/*	p.style && circle.cdom.style(p.style);*/
+		;
+		circle.setAngle=function(d){
+			circle.gdom.attr({
+				"transform":"translate("+ p.track.center[0]+","+(p.track.center[1])+")"+
+				"rotate("+ d +")"
+			});
+		};
+		circle.cdom.on("mousedown",function(d){
+			event_dom=circle;
+		});
+		circle.cdom.call(drag);
+		return circle;
+	};
+	function getAngle(x1,y1,x2,y2){
+		return (Math.atan((y2-y1)/(x2-x1))/Math.PI)*180/*+((x2-x1)<0?180:360)*/;
+	};
+	init();
+
+</script>

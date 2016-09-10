@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="../d3/d3.js"></script>
+    <style>
+        #chart{
+            width: 640px;
+            height: 960px;
+            background-color:#efefef;
+        }
+        #svg1{
+            position: absolute;
+            top:170px;
+        }
+        #legend{
+            position: absolute;
+            left: 210px;
+            top:100px;
+        }
+        .lText,.rText{
+            font-size: 12px;
+        }
+        .legend{
+            font-size: 10px;
+            font-family: "微软雅黑";
+        }
+        .title{
+            font-size: 14px;
+            font-family: "微软雅黑";
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart">
+
+   <svg width="640" height="300" id="svg1">
+       <g stroke="#64a9c4" stroke-width="1" transform="translate(10,5)">
+           <circle r="5" fill="#fff" stroke-dasharray="2"></circle>
+           <path d="M0 5 L0 75 L7 85 L7 180" stroke-dasharray="2" fill="none"></path>
+       </g>
+       <g transform="translate(30,100)" id="progesses">
+           <rect x="50" width="200" height="7" fill="#fff" rx="3"></rect>
+           <rect x="50" y="20" width="200" height="7" fill="#fff" rx="3"></rect>
+           <rect x="50" y="40" width="200" height="7" fill="#fff" rx="3"></rect>
+           <rect x="50" y="60" width="200" height="7" fill="#fff" rx="3"></rect>
+
+       </g>
+   </svg>
+
+   <svg width="100" height="150" id="legend"></svg>
+
+</div>
+
+<script>
+
+   var dataset= [
+
+        {
+            "id": 1,
+            "name":"人文行为素质",
+            "property": [
+                {
+                    "name": "a",
+                    "value": 51
+                },
+                {
+                    "name": "b",
+                    "value": 92
+                },
+                {
+                    "name": "c",
+                    "value": 77
+                },
+                {
+                    "name": "d",
+                    "value": 73
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name":"个人效能素质",
+            "property": [
+                {
+                    "name": "a",
+                    "value": 89
+                },
+                {
+                    "name": "b",
+                    "value": 10
+                },
+                {
+                    "name": "c",
+                    "value": 50
+                },
+                {
+                    "name": "d",
+                    "value": 78
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name":"理性直觉素质",
+            "property": [
+                {
+                    "name": "a",
+                    "value": 90
+                },
+                {
+                    "name": "b",
+                    "value": 20
+                },
+                {
+                    "name": "c",
+                    "value": 37
+                },
+                {
+                    "name": "d",
+                    "value": 45
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name":"人际影响素质",
+            "property": [
+                {
+                    "name": "人际交往",
+                    "value": 89
+                },
+                {
+                    "name": "公关能力",
+                    "value": 68
+                },
+                {
+                    "name": "激励",
+                    "value": 56
+                },
+                {
+                    "name": "领导能力",
+                    "value": 98
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name":"心里感情素质",
+            "property": [
+                {
+                    "name": "a",
+                    "value": 23
+                },
+                {
+                    "name": "b",
+                    "value": 46
+                },
+                {
+                    "name": "c",
+                    "value": 76
+                },
+                {
+                    "name": "d",
+                    "value": 49
+                }
+            ]
+        }
+
+    ];
+
+    var colorSet=[2,195,166,80,39];
+
+    var myLayout=function(){
+
+        var w = 200;
+        var h = 200;
+
+        var R = 100;
+        var r = 40;
+        var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+        var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+
+        var inner_padding_angle = 1; // 每个小弧在顺时针方向上的间隔
+        var outer_padding_angle = 9; // 每个大类在顺时针方向上的间隔
+       /* var elem_angle = 15; */        // 每个弧的弧度，值为角度，需要转换
+
+
+
+        // 角度转弧度
+        function degToRadian(deg){
+            var radian = deg/180 * Math.PI;
+            return radian;
+        }
+
+
+
+        function layout(){
+
+            var ipa = degToRadian(inner_padding_angle);
+            var opa = degToRadian(outer_padding_angle);
+           /* var ea  = degToRadian(elem_angle);*/
+
+            var part=(Math.PI*2-5*opa)/dataset.length;
+
+
+            dataset.forEach(function(d,i){
+                var start=i*part+i*opa;
+                solve(start, d.property,i);
+
+            });
+            function solve(start,arr,p){
+                var itemPart=(part-ipa*(arr.length-1))/arr.length;//每个小圆弧的弧度
+                arr.forEach(function(d,i){
+                    var itemStart=start+i*itemPart+i*ipa;
+                    d.data=[];
+                    var num;
+                    if(d.value>0&&d.value<=25){
+                        num=1;
+                    }else if(d.value>25&& d.value<=50){
+                        num=2;
+                    }else if(d.value>50&&d.value<=75){
+                        num=3;
+                    }else{
+                        num=4;
+                    }
+
+                    for(var j=0;j<4;j++){
+
+                        if(j<num){
+                            d.data.push({
+                                startAngle:itemStart,
+                                endAngle:itemStart+itemPart,
+                                ir:r+j*er+j*pr,
+                                or:r+(j+1)*er+j*pr,
+                                color:"hsl("+colorSet[p]+","+(25*(j+1))+"%,"+50+"%)"
+                            })
+                        }else{
+                            d.data.push({
+                                startAngle:itemStart,
+                                endAngle:itemStart+itemPart,
+                                ir:r+j*er+j*pr,
+                                or:r+(j+1)*er+j*pr,
+                                color:"#EDEDED"
+                            })
+                        }
+
+                    }
+
+                });
+            }
+
+
+
+            return dataset;
+
+        }
+
+        return layout;
+    };
+
+
+
+   //根据布局画出八卦图
+    var layout=myLayout();
+    var newDataset=layout();
+    console.log(dataset);
+
+   var arc = d3.svg.arc()
+           .startAngle(function(d){return d.startAngle})
+           .endAngle(function(d){return d.endAngle})
+           .innerRadius(function(d){return d.ir})
+           .outerRadius(function(d){return d.or});
+
+    var svg=d3.select("body")
+            .select("#chart")
+            .append("svg")
+            .attr("width",200)
+            .attr("height",200);
+
+    svg.append("rect").attr("width",200)
+            .attr("height",200)
+            .attr("fill","#fff");
+
+    var box=svg.append("g")
+            .attr('transform','translate(100,100)')
+            .attr("class","bg");
+
+
+
+    box.selectAll("g").data(newDataset)
+            .enter()
+            .append("g")
+            .attr("class",function(d){
+                return "category"+ d.id;
+            });
+
+   var categories=box.selectAll("g");
+
+   var haveRotate=0;
+
+   //给每个大类注册单击事件
+   categories.on("click",function(d){
+         var currentTransform=box.attr("transform");
+         console.log(currentTransform);
+         //画布的最大的g的旋转
+         var degree=(4-d.id)<0?(63+9)*4-haveRotate:(63+9)*(4-d.id)-haveRotate;
+         if(degree<0){
+             degree+=360;
+         }
+
+         var item=0;
+         var timer=setInterval(function(){
+             item+=5;
+             if(item>degree){
+                 clearInterval(timer);
+                 console.log(item);
+                 box.attr("transform",""+currentTransform+" "+"rotate("+degree+")");
+             }else if(item<degree){
+
+                 box.attr("transform",""+currentTransform+" "+"rotate("+item+")");
+
+             }
+
+         },50);
+         console.log(degree);
+
+
+         haveRotate+=degree;
+         haveRotate=haveRotate%360;
+         console.log(haveRotate);
+
+         drawBelow(d);
+   });
+
+   categories.each(function(d){
+        var gs=d3.select(this).selectAll("g")
+               .data(d.property)
+               .enter()
+               .append("g");
+
+        gs.each(function(m){
+
+            d3.select(this).selectAll("path")
+                    .data(m.data)
+                    .enter()
+                    .append("path")
+                    .attr("d",arc)
+                    .style("fill",function(d){return d.color});
+        });
+
+
+   });
+
+   //八卦图下面的描述绘制
+
+   var obj={
+
+       "id": 4,
+       "name":"人际影响素质",
+       "property": [
+           {
+               "name": "人际交往",
+               "value": 89
+           },
+           {
+               "name": "公关能力",
+               "value": 68
+           },
+           {
+               "name": "激励",
+               "value": 56
+           },
+           {
+               "name": "领导能力",
+               "value": 98
+           }
+       ]
+   };
+
+   function drawBelow(obj){
+       console.log(obj);
+       var svg1=d3.select("#svg1");
+
+
+       var ps=svg1.select("#progesses").selectAll(".rect")
+               .data(obj.property);
+
+       ps.enter()
+               .append("rect")
+               .attr("class","rect")
+               .attr("rx",3)
+               .attr("x",50)
+               .attr("y",function(d,i){return 20*i})
+               .attr("height",7)
+               .attr("fill","hsl("+colorSet[obj.id-1]+",100%,50%)")
+               .attr("width",0)
+               .transition()
+               .duration(1000)
+               .attr("width",function(d){return d.value/100*200});
+
+
+       ps.attr("fill","hsl("+colorSet[obj.id-1]+",100%,50%)")
+               .attr("width",0)
+               .transition()
+               .duration(1000)
+               .attr("width",function(d){return d.value/100*200});
+
+
+       //添加文字
+
+       var title=svg1.select("#progesses").selectAll(".title")
+               .data([obj]);
+
+       title.enter()
+               .append("text")
+               .attr("class","title")
+               .attr("x",-10)
+               .attr("y",-20)
+               .text(function(d){return d.name});
+
+       title.text(function(d){return d.name});
+
+
+       var text_left=svg1.select("#progesses").selectAll(".lText")
+               .data(obj.property);
+       text_left.enter()
+               .append("text")
+               .attr("class","lText")
+               .attr("y",function(d,i){return 20*i+8})
+               .text(function(d){return d.name});
+
+       text_left.text(function(d){return d.name});
+
+       var text_right=svg1.select("#progesses").selectAll(".rText")
+               .data(obj.property);
+       text_right.enter()
+               .append("text")
+               .attr("class","rText")
+               .attr("x",260)
+               .attr("y",function(d,i){return 20*i+8})
+               .text(function(d){return d.value});
+
+       text_right.text(function(d){return d.value})
+                .attr("fill","hsl("+colorSet[obj.id-1]+",100%,50%)");
+
+   }
+
+   drawBelow(obj);
+
+
+   //添加图例
+   var svgLegend=d3.select("#legend");
+
+   var gl=svgLegend.append("g")
+           .attr("transform","translate(20,10)");
+
+   var lengends=gl.selectAll("g")
+                  .data(newDataset)
+                  .enter()
+                  .append("g")
+                  .attr("class",function(d){return "legend"+ d.id});
+
+   lengends.each(function(d,i){
+
+       var legend=d3.select(this);
+       legend.append("circle")
+               .attr("cy",i*20)
+               .attr("r",5)
+               .style("fill","hsl("+colorSet[d.id-1]+",100%,50%)");
+
+       legend.append("text")
+               .attr("y",i*20+5)
+               .attr("x",15)
+               .attr("class","legend")
+               .text(function(d){return d.name});
+
+
+   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="CircleChart.js"> </script>
+</head>
+<body>
+
+<div id="div1"></div>
+<div id="div2"></div>
+<script>
+
+    var test1={
+
+        "ele":"#div1",
+        "data":[1,2,3],
+        "width":800,
+        "height":700
+
+    };
+
+    var test2={
+
+        "ele":"#div2",
+        "data":[3,4,5]
+
+    };
+
+    var chart1=CircleChart(test1);
+
+    chart1();
+
+    var chart2=CircleChart(test2);
+
+    chart2();
+
+</script>
+</body>
+</html>

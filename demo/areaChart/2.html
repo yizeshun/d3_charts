@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .browser text {
+        text-anchor: end;
+    }
+
+</style>
+<body>
+<script src="../d3/d3.js"></script>
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+
+    var x = d3.scale.ordinal()
+            .rangeBands([0, width]);
+
+    var y = d3.scale.linear()
+            .range([height, 0]);
+
+    var color = d3.scale.category20();
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+
+    var area = d3.svg.area()
+            .x(function(d) { return x(d.year)+ x.rangeBand()/2; })
+            .y0(function(d) { return y(d.y0); })
+            .y1(function(d) { return y(d.y0 + d.y); });
+
+    var stack = d3.layout.stack()
+            .values(function(d) { return d.GDP; });
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.json("data.json", function(error, data) {
+        if (error) throw error;
+
+        console.log("查看数据");
+        console.log(data);
+
+        var statistics=data.statistics;
+
+        console.log(statistics);
+
+        x.domain(statistics[0].GDP.map(function(d){return d.year;}));
+
+        var newData=statistics[0].GDP.map(function(d){
+
+            return {
+
+                year: d.year,
+
+                values:statistics.map(function(i){
+
+                    var tempValue=0;
+
+                    i.GDP.forEach(function(j){
+
+                        if(j.year== d.year){
+
+                            tempValue= j.value;
+
+                        }
+
+
+                    });
+
+
+                    return {
+
+                        country: i.country,
+
+                        value: tempValue
+
+                    }
+
+                })
+
+
+            }
+
+
+        });
+
+
+        console.log("newData");
+
+        console.log(newData);
+
+        var maxValue=d3.max(newData,function(d){return d3.sum(d.values,function(i){return i.value;})});
+
+        console.log("最大值为"+maxValue);
+
+        y.domain([0,maxValue]);
+
+        statistics.forEach(function(d){
+
+            d.GDP.forEach(function(i){
+
+                i.y=i.value;
+
+            });
+
+        });
+
+        console.log("处理后的statistics");
+
+        console.log(statistics);
+
+        var browsers=stack(statistics);
+
+        console.log(browsers);
+
+        var browser = svg.selectAll(".browser")
+                .data(browsers)
+                .enter().append("g")
+                .attr("class", "browser");
+
+        browser.append("path")
+                .attr("class", "area")
+                .attr("d", function(d) { return area(d.GDP); })
+                .style("fill", function(d) { return color(d.country); });
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+    });
+
+</script>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="../d3/d3.tip.js"></script>
+    <style>
+
+        
+
+        text {
+            fill:white;
+            font-size: 11px;
+            pointer-events: none;
+        }
+
+        text.parent {
+            fill: white;
+        }
+
+        circle {
+            fill: rgb(31, 119, 180);
+            fill-opacity: .4
+            stroke: none;
+           /* pointer-events: none;*/
+        }
+
+        circle.parent {
+            fill: rgb(31, 119, 180);
+            fill-opacity: .4;
+            stroke: none;
+        }
+
+        circle.child {
+            fill: rgb(31, 119, 180);
+            fill-opacity: .4;
+            stroke: none;
+        }
+
+        circle.parent:hover {
+            fill: yellow;
+        }
+
+        circle.child:hover{
+            /*pointer-events: none;*/
+            fill: yellow;
+
+        }
+        .d3-tip {
+            line-height: 1;
+            font-weight: bold;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            border-radius: 2px;
+        }
+
+    </style>
+</head>
+<body>
+<script>
+
+    var w = 1280,
+            h = 600,
+            r = 300,
+            x = d3.scale.linear().range([0, r]),
+            y = d3.scale.linear().range([0, r]),
+            node,
+            root;
+
+    var category=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"
+                   ,"P","Q","R","S","T","U","V","W","X","Y","Z"];
+
+    var pack = d3.layout.pack()
+            .size([r, r])
+            .value(function(){return 0.5});
+
+    var drag=d3.behavior.drag()
+            .on("drag",mousemove);
+
+
+
+
+    var vis = d3.select("body").insert("svg:svg", "h2")
+            .attr("width", w)
+            .attr("height", h)
+            .append("svg:g")
+            .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")")
+            .call(drag);
+
+    var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([0,0])
+            .direction('n')
+            .html(function(d) { return "课程名:"+ d.courseName; });
+
+    vis.call(tip);
+
+
+    d3.json("course.json", function(data) {
+        node = root = data;
+
+        console.log(data);
+
+        var nodes = pack.nodes(root);
+
+        console.log(nodes);
+
+
+
+
+
+        /*vis.selectAll("circle")
+                .data(nodes)
+                .enter().append("svg:circle")
+                .attr("class", function(d) { return d.children ? "parent" : "child"; })
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; })
+                .attr("r", function(d) { return d.r; })
+                .on("click", function(d) { console.log("haha") ;console.log(d); return zoom(node == d ? root : d); });*/
+
+
+        vis.selectAll("circle")
+                .data(nodes)
+                .enter().append("svg:circle")
+                .attr("class", function(d) { return d.children ? "parent" : "child"; })
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; })
+                .attr("r", function(d) { return 0; })
+                .attr("r", function(d) { return d.r; });
+
+
+
+        vis.selectAll(".child")
+                .on("click",function(d){return click(d)})
+                .on("mouseover", tip.show)
+                .on("mouseout", tip.hide);
+
+
+
+        var category_g=d3.select("svg")
+                .append("g")
+                .attr("class","category");
+
+
+        category_g.selectAll(".rect")
+                .data(category)
+                .enter().append("svg:rect")
+                .attr("class","rect")
+                .attr("x",function(d,i){return i%2==0?0:30})
+                .attr("y",function(d,i){return i*30;})
+                .attr("width",30)
+                .attr("height",30)
+                .style("fill","blue")
+                .attr("opacity",0.3)
+                .on("mouseover",function(d){return mouseover(d)});
+
+
+        category_g.selectAll("text")
+                .data(category)
+                .enter().append("svg:text")
+                .attr("class","category_text")
+                .attr("x",function(d,i){return i%2==0?(0+30/2):(30+30/2)})
+                .attr("y",function(d,i){return i*30+30/2;})
+                .text(function(d){return d})
+                .attr("fill","white");
+
+
+
+        vis.selectAll("text")
+                .data(nodes.filter(function(d){return d.depth!=0;}))
+                .enter().append("svg:text")
+                .attr("class", function(d) { return d.children ? "parent" : "child"; })
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y; })
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .style("opacity", 0)
+                .transition()
+                .delay(500)
+                .duration(1000)
+                .style("opacity", function(d) { return d.r > 20 ? 1 : 0; })
+                .text(function(d) {
+
+                    if(d.children!=null){
+
+                        return d.name;
+
+                    }else{
+
+                        if (d.courseName.length > 5) {
+
+                            return d.courseName.substring(0, 5)+"..";
+
+                        }else{
+                            return d.courseName;
+                        }
+
+
+                    }
+
+
+
+                });
+
+
+        d3.select(window).on("click", function() { zoom(root); });
+    });
+
+    function zoom(d, i) {
+
+        if (d3.event.defaultPrevented) return;
+
+        vis.attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+
+        var k = r /d.r/2 ;
+        x.domain([d.x - d.r, d.x + d.r]);
+        y.domain([d.y - d.r, d.y + d.r]);
+
+
+
+        var t = vis.transition()
+                .duration(d3.event.altKey ? 7500 : 750);
+
+        t.selectAll("circle")
+                .attr("cx", function(d) { return x(d.x); })
+                .attr("cy", function(d) { return y(d.y); })
+                .attr("r", function(d) { return k * d.r; });
+
+        t.selectAll("text")
+                .attr("x", function(d) { return x(d.x); })
+                .attr("y", function(d) { return y(d.y); })
+                .style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; })
+                .text(function(d){
+
+                    if(d.children!=null){
+
+                        return d.name;
+
+                    }else{
+
+                        if (k * d.r/6 > d.courseName.length) {
+
+                            return d.courseName;
+
+                        }else{
+
+                                return d.courseName.substring(0, k * d.r/6)+"..";
+
+
+
+                        }
+
+
+                    }
+
+                });
+
+
+        node = d;
+
+        d3.event.stopPropagation();
+
+    }
+
+
+    function mousemove(){
+
+
+
+        var m=vis.attr("transform");
+
+        var pos=m.substring(m.indexOf("(")+1, m.indexOf(")"));
+
+        var newPos=pos.split(",");
+
+        var last_x=parseInt(newPos[0]);
+
+        var last_y=parseInt(newPos[1]);
+
+        vis.attr("transform", "translate(" + ((last_x+d3.event.dx))+ "," + ((last_y+d3.event.dy))+ ")");
+
+
+
+    }
+
+    function mouseover(d){
+
+        var circles=vis.selectAll("circle");
+
+        circles.each(function(i){
+
+            if(i.name==d){
+
+                return zoom(i);
+
+            }
+
+        });
+
+    }
+
+    function click(d){
+
+        if (d3.event.defaultPrevented) return;
+
+        console.log(d);
+
+        /*window.location.href="http://localhost:63342/webstorm/myProject/pack/test.html";*/
+
+
+
+    }
+
+
+
+
+</script>
+</body>
+</html>

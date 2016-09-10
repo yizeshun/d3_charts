@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+        .path{
+            fill: none;
+            stroke:#000000;
+            stroke-width: 1.5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <script>
+
+        var width=800;
+        var height=800;
+        var svg=d3.select("body")
+                .append("svg")
+                .attr("class","svg")
+                .attr("width",width)
+                .attr("height",height);
+
+        var linear_y=d3.scale.linear()
+                .domain([0,250000])
+                .range([0,800]);
+        var linear_x=d3.scale.linear()
+                .domain([-500,500])
+                .range([0,800]);
+        //画抛物线，参数分别为a*x^2+b*x+c;x1,x2为范围
+        function parobola(a,b,c,x1,x2){
+
+            var str="M";
+            for(i=x1;i<x2;i++){
+                var y=height-linear_y(a*i*i-i*b+c);
+                var x=linear_x(i);
+                str=str+x+" "+y+"L";
+            }
+            return str;
+        }
+
+        var parobola1=parobola(3,4,5,-500,500);//定义一个抛物线对象
+
+        var path=svg.append("path")//绘图
+                .attr("d",parobola1)
+                .attr("class","path");
+
+
+    </script>
+
+
+</body>
+</html>

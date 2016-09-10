@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+
+
+    .x.axis path {
+        display: none;
+    }
+
+
+
+</style>
+<body>
+<script src="../d3/d3.js"> </script>
+<script>
+
+    var margin = {top: 20, right: 100, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], 0.5);
+
+    var y = d3.scale.linear()
+            .rangeRound([height, 0]);
+
+    var color = d3.scale.ordinal()
+            .range(["#4f81bd", "#c0504d", "#9bbb59", "#8064a2" ]);
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .tickFormat(d3.format(".0%"));
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("stack.csv", function(error, data) {
+        color.domain(d3.keys(data[0]).filter(function(key) { return key !== "客观题号"; }));
+        console.log(data);
+        data.forEach(function(d) {
+            var y0 = 0;
+            d.choice = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += parseFloat(d[name])}; });
+            d.choice.forEach(function(d) { d.y0 /= y0; d.y1/=y0; });
+        });
+
+        x.domain(data.map(function(d) { return d.客观题号; }));
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+        var state = svg.selectAll(".state")
+                .data(data)
+                .enter().append("g")
+                .attr("class", "state")
+                .attr("transform", function(d) { return "translate(" + x(d.客观题号) + ",0)"; });
+
+        state.selectAll("rects")
+        .data(function(d) { return d.choice; })
+                .enter().append("rect")
+                .attr("width", x.rangeBand())
+                .attr("y", function(d) { return y(d.y1); })
+                .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+                .style("fill", function(d) { return color(d.name); });
+
+
+
+    });
+
+</script>

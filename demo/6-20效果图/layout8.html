@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <script src="lib/d3.v3.js"></script>
+    <style>
+        * {
+            padding: 0; margin: 0;
+        }
+        html,body {
+            margin: 0; padding: 0;
+            background-color: #ededee;
+            overflow: hidden;
+            height: 100%;
+        }
+        html {
+            width: 100%;
+        }
+
+        #chart{
+            width: 100%;
+            height:100%;
+            background-image: url("img/bg.png");
+            background-size: 20% auto;
+            background-repeat: repeat;
+            overflow: hidden;
+            position: relative;
+        }
+        #svg1{
+            position: absolute;
+            z-index: 9998;
+
+        }
+        #legend{
+            position: absolute;
+            z-index: 9999;
+
+        }
+        .lText,.rText{
+            font-size: 12px;
+        }
+        .legend{
+            font-size: 10px;
+            font-family: "微软雅黑";
+        }
+        .title{
+            font-size: 14px;
+            font-family: "微软雅黑";
+        }
+        .main{
+            position: absolute;
+
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart">
+
+
+    <svg id="svg1">
+        <g stroke="#64a9c4" stroke-width="1" transform="translate(10,5)" id="left">
+            <circle r="5" fill="#fff" stroke-dasharray="2"></circle>
+            <path d="M0 5 L0 70 L10 80 L10 200" stroke-dasharray="2" fill="none"></path>
+        </g>
+        <g transform="translate(30,100)" id="progesses">
+
+        </g>
+    </svg>
+
+    <svg id="legend"></svg>
+
+</div>
+
+<script>
+
+    //获取数据
+    function getData(url){
+        d3.json(url,function(error,root){
+            if(error){
+                throw error;
+            }else{
+                var data=root;
+                drawImg(data);
+
+            }
+        });
+    }
+
+    // 角度转弧度
+    function degToRadian(deg){
+        var radian = deg/180 * Math.PI;
+        return radian;
+    }
+
+    //布局函数
+    function layout(data,w){
+
+        var width=w*0.5;   //svg画布的宽
+        var height=w*0.5;  //svg画布的高
+        var R=width/2;     //扇形外半径
+        var r=R/2;        //扇形内半径
+        var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+        var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+        var ipa= degToRadian(1); // 每个小弧在顺时针方向上的间隔,以弧度表示
+        var opa= degToRadian(9); // 每个大弧在顺时针方向上的间隔,以弧度表示
+        var part=(Math.PI*2-data.length*opa)/data.length; //每个大弧的弧度
+        var newData; //返回的布局数据
+
+
+
+        data.forEach(function(d,i){
+
+            var start=i*part+i*opa;//每个大弧的起始角
+            solve(start, d.property,i); //每个大弧具体的布局函数
+
+        });
+
+
+        function solve(start,arr,p){
+
+            var itemPart=(part-ipa*(arr.length-1))/arr.length;//每个property的弧度
+
+            arr.forEach(function(d,i){
+
+                var itemStart=start+i*itemPart+i*ipa;//每个property起始的弧度
+
+                d.data=[];//给每个property加上一下数组,用于存储每个property所包含的四个放射方向小弧的数据
+
+                var num;  //用于计算给每个property的四个放射方向的弧加颜色的个数
+                if(d.value>0&&d.value<=25){
+                    num=1;
+                }else if(d.value>25&& d.value<=50){
+                    num=2;
+                }else if(d.value>50&&d.value<=75){
+                    num=3;
+                }else{
+                    num=4;
+                }
+
+                //每个property只用四个放射方向的弧代表数值
+                for(var j=0;j<4;j++){
+
+                    if(j<num){
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"hsla("+color[p]+","+(25*(j+1))+"%,"+50+"%,"+0.5+")"
+                        })
+                    }else{
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"#EDEDED"
+                        })
+                    }
+
+                }
+
+            });
+        }
+
+        newData=data;
+
+        return newData;
+
+    }
+
+    function drawArc(w,h,data){
+        var width=w*0.6;
+        var height=w*0.6;
+        var ipa= degToRadian(1); // 每个小弧在顺时针方向上的间隔,以弧度表示
+        var opa= degToRadian(9); // 每个大弧在顺时针方向上的间隔,以弧度表示
+        var part=(Math.PI*2-data.length*opa)/data.length; //每个大弧的弧度
+        var arc = d3.svg.arc()
+                .startAngle(function(d){return d.startAngle})
+                .endAngle(function(d){return d.endAngle})
+                .innerRadius(function(d){return d.ir})
+                .outerRadius(function(d){return d.or});
+
+        var roundArc = d3.svg.arc()
+                .startAngle(function(d){return d.startAngle})
+                .endAngle(function(d){return d.endAngle})
+                .innerRadius(function(d){return d.ir})
+                .outerRadius(function(d){return d.or})
+                .cornerRadius(3);
+
+
+
+        var unique=d3.svg.arc()
+                .startAngle(3*part+2*opa+9*ipa)
+                .endAngle(4*part+2*opa+9*ipa)
+                .innerRadius(width*0.43)
+                .outerRadius(width*0.44);
+
+
+        var svg=d3.select("body")
+                .select("#chart")
+                .append("svg")
+                .attr("class","main")
+                .attr("width",w*0.7)
+                .attr("height",w*0.7)
+                .style({top:h*0.08});
+
+        svg.append("circle").attr("r",width*0.46)
+                .attr("fill","#fff")
+                .attr("transform","translate("+(w*0.35)+","+(w*0.35)+")");
+
+        svg.append("rect").attr({width:width*0.4,height:width*0.4})
+                .attr("fill","#fff")
+                .attr("transform","translate("+(w*0.07)+","+(w*0.35)+")");
+
+        var box=svg.append("g")
+                .attr('transform',"translate("+(w*0.35)+","+(w*0.35)+")")
+                .attr("class","bg");
+
+        box.selectAll("g").data(data)
+                .enter()
+                .append("g")
+                .attr("class",function(d){
+                    return "category"+ d.id;
+                });
+
+        var categories=box.selectAll("g");
+
+        categories.each(function(d,i){
+            var gs=d3.select(this).selectAll("g")
+                    .data(d.property)
+                    .enter()
+                    .append("g");
+
+            gs.each(function(m,i){
+
+                d3.select(this).selectAll("path")
+                        .data(m.data)
+                        .enter()
+                        .append("path")
+                        .attr("d",i==0||i==3?roundArc:arc)
+                        .style("fill",function(d){return d.color});
+            });
+
+
+        });
+
+        svg.append("path")
+                .attr("class","unique")
+                .attr("d",unique)
+                .style("stroke","#8E99A3")
+                .style("opacity",0.5)
+                .attr('transform',"translate("+(w*0.35)+","+(w*0.35)+")");
+
+
+        addListener(categories,box,w,h);
+
+
+    }
+
+
+    function drawBelow(obj,w,h){
+
+        var svg1=d3.select("#svg1");
+
+        svg1.attr("width",w)
+                .attr("height",h)
+                .style({top:h*0.08+w*0.55,left:w*0.08});
+
+        svg1.select("#progesses").selectAll(".bgRect")
+                .data([0,1,2,3])
+                .enter()
+                .append("rect")
+                .attr("class","bgRect")
+                .attr("rx",3)
+                .attr("x",50)
+                .attr("y",function(d,i){return 30*i})
+                .attr("height",7)
+                .style("fill","#fff")
+                .attr("width",w*0.5);
+
+
+        var ps=svg1.select("#progesses").selectAll(".rect")
+                .data(obj.property);
+
+        ps.enter()
+                .append("rect")
+                .attr("class","rect")
+                .attr("rx",3)
+                .attr("x",50)
+                .attr("y",function(d,i){return 30*i})
+                .attr("height",7)
+                .attr("fill","hsla("+color[obj.id-1]+",100%,50%,"+0.5+")")
+                .attr("width",0)
+                .transition()
+                .duration(1000)
+                .attr("width",function(d){return d.value/100*w*0.5});
+
+
+        ps.attr("fill","hsla("+color[obj.id-1]+",100%,50%,"+0.5+")")
+                .attr("width",0)
+                .transition()
+                .duration(1000)
+                .attr("width",function(d){return d.value/100*w*0.5});
+
+
+        //添加文字
+
+        var title=svg1.select("#progesses").selectAll(".title")
+                .data([obj]);
+
+        title.enter()
+                .append("text")
+                .attr("class","title")
+                .attr("x",-20)
+                .attr("y",-30)
+                .text(function(d){return d.name});
+
+        title.text(function(d){return d.name});
+
+
+        var text_left=svg1.select("#progesses").selectAll(".lText")
+                .data(obj.property);
+        text_left.enter()
+                .append("text")
+                .attr("class","lText")
+                .attr("y",function(d,i){return 30*i+8})
+                .text(function(d){return d.name});
+
+        text_left.text(function(d){return d.name});
+
+        var text_right=svg1.select("#progesses").selectAll(".rText")
+                .data(obj.property);
+        text_right.enter()
+                .append("text")
+                .attr("class","rText")
+                .attr("x",50+w*0.5+10)
+                .attr("y",function(d,i){return 30*i+8})
+                .text(function(d){return d.value});
+
+        text_right.text(function(d){return d.value})
+                .attr("fill","hsla("+color[obj.id-1]+",100%,50%,"+0.5+")");
+
+    }
+
+    function drawLegend(data,w,h){
+
+        //添加图例
+        var width=w*0.5;
+        var height=h*0.5;
+        var svgLegend=d3.select("#legend")
+                .attr("width",width)
+                .attr("height",height);
+
+        svgLegend.style({"left":w*0.65,"top":h*0.08+w*0.3});
+
+        var gl=svgLegend.append("g")
+                .attr("transform","translate(20,10)");
+
+        var lengends=gl.selectAll("g")
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("class",function(d){return "legend"+ d.id});
+
+        lengends.each(function(d,i){
+
+            var legend=d3.select(this);
+            legend.append("circle")
+                    .attr("cy",i*20)
+                    .attr("r",5)
+                    .style("fill","hsla("+color[d.id-1]+",100%,50%,"+0.5+")");
+
+            legend.append("text")
+                    .attr("y",i*20+5)
+                    .attr("x",15)
+                    .attr("class","legend")
+                    .text(function(d){return d.name});
+
+        });
+
+        var box=d3.select(".main").select(".bg");
+        addListener(lengends,box,w,h);
+
+
+    }
+
+
+
+
+    function addListener(selection,box,w,h){
+
+
+        //给每个大类注册单击事件
+        selection.on("click",function(d){
+
+            var currentTransform=box.attr("transform");
+            //画布的最大的g的旋转
+            var degree=(4-d.id)<0?(63+9)*4-haveRotate:(63+9)*(4-d.id)-haveRotate;
+            if(degree<0){
+                degree+=360;
+            }
+
+            var item=0;
+            var timer=setInterval(function(){
+                item+=5;
+                if(item>degree){
+                    clearInterval(timer);
+                    box.attr("transform",""+currentTransform+" "+"rotate("+degree+")");
+                }else if(item<degree){
+
+                    box.attr("transform",""+currentTransform+" "+"rotate("+item+")");
+
+                }
+
+            },50);
+
+            haveRotate+=degree;
+            haveRotate=haveRotate%360;
+
+            drawBelow(d,w,h);
+
+        }).on("mouseover",function(){
+            d3.select(this).style("cursor","pointer");
+        })
+
+    }
+
+
+    function drawImg(data){
+
+
+        var chart=document.getElementById("chart");
+        var width=chart.offsetWidth;
+        console.log("width"+width);
+        var height=chart.offsetHeight;
+        console.log("height",height);
+
+        var nodes=layout(data,width);
+
+        drawArc(width,height,nodes);
+
+        drawBelow(data[3],width,height);
+
+        drawLegend(data,width,height);
+
+    }
+
+    var color=[2,195,166,80,39];
+
+    var haveRotate=0;
+    getData("data.json");
+
+
+
+
+</script>
+
+
+</body>
+</html>

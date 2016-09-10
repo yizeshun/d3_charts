@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+    <style type="text/css">
+
+        circle {
+            cursor: pointer;
+            stroke: #000;
+            stroke-width: .5px;
+        }
+
+
+        line {
+            fill: none;
+            stroke: #c6dbef;
+            stroke-width: 1.5px;
+        }
+
+    </style>
+</head>
+<body>
+
+<script type="text/javascript" src="lib/d3.js"></script>
+
+<script type="text/javascript">
+
+
+    var root;
+
+    var width=1200;
+    var height=800;
+    var link;
+    var node;
+    var myText;
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var force=d3.layout.force()
+            .on("tick",tick)
+            .size([1200,800])
+            .linkDistance(function(d) { return d.target._children ? 30 :100;})
+            .charge(function(d) { return d._children ?-20 : -100; });
+
+    var drag=force.drag();
+
+    d3.json("city.json",function(json){
+
+        root=json;
+        root.fixed = true;
+        root.x = width / 2;
+        root.y = height / 2;
+        update();
+
+    });
+
+
+    function update(){
+
+        var nodes=flatten(root);
+
+        var links=d3.layout.tree().links(nodes);
+
+        console.log(links);
+
+        links.forEach(function(d){
+
+            d.source= d.source.id;
+            d.target= d.target.id;
+
+        });
+
+        force.nodes(nodes)
+                .links(links)
+                .start();
+
+        console.log(nodes);
+
+
+        link=svg.selectAll("line")
+                .data(links);
+
+        link.enter()
+            .append("line");
+
+
+        svg.selectAll("line")
+                .style("stroke","#ccc")
+                .style("stroke-width",1);
+
+        link.exit()
+            .remove();
+
+
+        node=svg.selectAll("circle")
+                .data(nodes,function(d){return d.id});
+
+        node.enter()
+                .append("circle")
+                .attr("r",function(d){return d.children?10:5})
+                .style("fill",function(d){return  d.children ? "#c6dbef" : "#fd8d3c";})
+                .on("click",click)
+                .call(drag);
+
+
+        svg.selectAll("circle")
+                .attr("r",function(d){return d.children?10:5})
+                .style("fill",function(d){return d._children?"#3182bd":d.children ? "#c6dbef" : "#fd8d3c";});
+
+
+        node.exit()
+            .remove();
+
+
+      /*  myText=svg.selectAll("text")
+                .data(nodes,function(d){return d.name});
+
+        myText.enter()
+                .append("text")
+                .text(function(d){return d.name});
+
+
+        myText.exit()
+                .remove();*/
+
+
+    }
+
+    function tick() {
+
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+
+      /*  myText.attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y; });*/
+    }
+
+
+    function flatten(root){
+
+        var nodes=[],i=0;
+
+        function getAllNode(node){
+
+            if(node.children){
+                var array=node.children;
+                for(var j=0;j<array.length;j++){
+                    getAllNode(array[j]);
+                }
+
+            }
+            node.id=i++;
+            nodes.push(node);
+
+        }
+
+        getAllNode(root);
+
+        return nodes;
+
+    }
+
+    function click(d){
+
+        if (d3.event.defaultPrevented) return;
+
+        if(d.children){
+
+            d._children= d.children;
+            d.children=null;
+        }else if(d._children){
+
+            d.children= d._children;
+            d._children=null;
+        }
+
+        update();
+
+    }
+
+
+
+</script>
+</body>
+</html>

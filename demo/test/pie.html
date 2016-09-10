@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+
+    d3.json("CourseNumController/getAllDomainNumData",function(error, dataset) {
+
+                console.log(dataset);
+
+
+
+
+    });// 画饼图结束
+
+    function drawPie(){
+
+
+        var svg_g = svg.append("g")
+                .attr("class", "container_g");
+
+        svg_g.append("g").attr("class", "slice");// 扇形部分
+
+        svg_g.append("g").attr("class", "lables");// 文字部分
+
+        var radius = radius = Math.min(width, height) / 2;
+
+        var pie = d3.layout.pie().value(function(d) {
+            return d.num
+        });
+
+        var arc = d3.svg.arc().outerRadius(radius * 0.5)
+                .innerRadius(0);
+
+        svg_g.attr("transform", "translate(" + width / 3 + ","
+                + height / 3 + ")");
+
+        var color = d3.scale.category10();
+
+        var slice = svg.select(".slice")
+                .selectAll("path.slice").data(pie(dataset));
+
+        var enter = slice.enter().append("path").attr("class",
+                "slice").style("fill", function(d) {
+                    return color(d.data.domainName);
+                }).each(function(d) {
+
+                    this._current = {};
+
+                    this._current.startAngle = 0;
+
+                    this._current.data = d.data;
+
+                    this._current.value = d.value;
+
+                    this._current.endAngle = 0;
+
+                });
+
+        slice = svg.select(".slice").selectAll("path.slice");
+
+        slice.transition().duration(1000).attrTween(
+                "d",
+                function(d) {
+                    var interpolate = d3.interpolate(
+                            this._current, d);
+                    var _this = this;
+                    return function(t) {
+                        _this._current = interpolate(t);
+                        return arc(_this._current);
+                    };
+                });
+
+        var text = svg.select(".lables").selectAll("text")
+                .data(pie(dataset));
+
+        var enter = text.enter().append("text")
+                .attr(
+                "transform",
+                function(d) {
+                    return "translate("
+                            + arc.centroid(d) + ")";
+                }).attr("text-anchor", "middle").text(
+                function(d) {
+                    return d.value;
+                })
+                .style("fill","white")
+                .attr("opacity",0);
+
+        text = svg.select(".lables").selectAll("text");
+
+        text.transition().delay(500).duration(1000)
+                .style("opacity",1);
+
+
+        //鼠标单击扇形，进入下一级
+        slice.on("click",function(d){
+
+            window.location.href="CourseNumController/dispatcherToDepartmentCourseNumData?domain="
+                    +d.data.domain;
+
+        });
+
+
+
+
+    }
+
+
+</script>
+</body>
+</html>

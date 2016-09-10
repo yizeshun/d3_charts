@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    .x.axis path {
+        display: none;
+    }
+
+    .xaxis path,
+    .xaxis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+    .yaxis path,
+    .yaxis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+    }
+    .xaxis text {
+        font-family: sans-serif;
+        font-size: 11px;
+        color: black;
+
+
+    }
+    .yaxis text {
+        font-family: sans-serif;
+        font-size: 11px;
+        color:black
+
+    }
+
+    .inner_line path,
+    .inner_line line {
+        fill: none;
+        stroke:grey;
+        shape-rendering: crispEdges;
+    }
+
+
+
+</style>
+<body style="text-align: center">
+<script src="../d3/d3.js"> </script>
+<script>
+
+      var w=800;
+      var h=500;
+      var padding=60;
+      var example=[w-padding];
+      var fm=d3.format(".2%");
+      var x = d3.scale.ordinal()
+            .rangeRoundBands([padding, w-padding], 0.5);
+      var y = d3.scale.linear()
+            .rangeRound([h-padding, padding]);
+      var tchoice=["A","B","C","D"];
+      var colorArray=["#4f81bd", "#c0504d", "#9bbb59", "#8064a2" ];
+      var color = d3.scale.ordinal()
+              .range(colorArray);
+      var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+      var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .tickFormat(d3.format(".0%"));
+
+
+    d3.csv("stack.csv", function(error, data) {
+        color.domain(d3.keys(data[0]).filter(function(key) { return key !== "客观题号"; }));
+        console.log(data);
+        data.forEach(function(d) {
+            var y0 = 0;
+            d.choice = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += parseFloat(d[name])}; });
+            d.choice.forEach(function(d) { d.y0 /= y0; d.y1/=y0; });
+
+        });
+
+        x.domain(data.map(function(d) { return d.客观题号; }));
+
+        var svg = d3.select("body").append("svg")
+                .attr("width", w)
+                .attr("height",h);
+
+        svg.append("g")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", w)
+                .attr("height", h)
+                .style("fill", "#fff")
+                .style("stroke-width", 2)
+                .style("stroke", "#E7E7E7");
+        //添加标题
+        svg.append("text")
+                .text("客观题选择分布情况")
+                .attr("x", w/2)
+                .attr("y", padding/2 )
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "30px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+        for(j=0;j<4;j++){
+            svg.append("rect")
+                    .attr("x",w-padding)
+                    .attr("y",h/2+j*20)
+                    .attr("width",10)
+                    .attr("height",10)
+                    .attr("fill",colorArray[j]);
+            svg.append("text")
+                    .attr("x",w-padding+20)
+                    .attr("y",h/2+j*20+10)
+                    .text(tchoice[j]);
+        }
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (h-padding) + ")")
+                .call(xAxis)
+                .selectAll("text")
+                .attr("transform", "rotate(" + 90 + ",-8,20)");
+        svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform","translate("+padding+",0)")
+                .call(yAxis);
+        var state = svg.selectAll(".state")
+                .data(data)
+                .enter().append("g")
+                .attr("class", "state")
+                .attr("transform", function(d) { return "translate(" + x(d.客观题号) + ",0)"; });
+           state.selectAll("rects")
+                .data(function(d) { return d.choice; })
+                .enter().append("rect")
+                .attr("width", x.rangeBand())
+                .attr("y", function(d) { return y(d.y1); })
+                .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+                .style("fill", function(d) { return color(d.name); })
+                .append("title")
+                .text(function(d){
+
+                       return "系列"+ d.name
+                               +"\n"+"值"+fm(d.y1-d.y0);
+                });
+
+    });
+
+</script>
+
+<script type="text/javascript">
+    var w=800;
+    var h=500;
+    var padding=60;
+ //主观题得分情况
+    d3.csv("zhuguanti.csv",function(error,dataset){
+        console.log(dataset);
+        var yscale=d3.scale.linear();
+        yscale.domain([0,1])
+                .range([h-padding,padding]);
+        var ordinalDate=[];
+        var ordinal=[];
+        for(i=0;i<dataset.length;i++){
+            ordinalDate.push(dataset[i].主观题号);
+            ordinal.push(i);
+        }
+        var xscale=d3.scale.ordinal();
+        xscale.domain(ordinalDate)
+                .rangeRoundBands([padding,w-padding],0.05);
+        var xScale=d3.scale.ordinal();
+        xScale.domain(ordinal)
+                .rangeRoundBands([padding,w-padding],0.05);
+        var formatAsPercentage = d3.format(".1%");
+        var xAxis=d3.svg.axis();
+        xAxis.scale(xscale)
+                .orient("bottom");
+        var yAxis=d3.svg.axis();
+        yAxis.scale(yscale)
+                .tickFormat(formatAsPercentage)
+                .orient("left");
+        var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+        svg.append("g")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", w)
+                .attr("height", h)
+                .style("fill", "#fff")
+                .style("stroke-width", 2)
+                .style("stroke", "#E7E7E7");
+        svg.append("text")
+                .text("主观题得分情况")
+                .attr("x", w/2)
+                .attr("y", padding/2 )
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "30px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+        svg.selectAll("texts")
+                .data(dataset)
+                .enter()
+                .append("text")
+                .text(function(d){
+                    return d.得分率;
+                })
+                .attr("x", function(d, i) {
+                    return xScale(i)+xScale.rangeBand()/2;
+                })
+                .attr("y", function(d) {
+                    return (yscale(parseFloat(d.得分率)/100))-5;
+                })
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "11px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+        //x方向的线
+        var yInner = d3.svg.axis()
+                .scale(yscale)
+                .tickSize(-(w-padding*2),0,0)
+                .tickFormat("")
+                .orient("left")
+                .ticks(10);
+        svg.append("g")
+                .attr("class","inner_line")
+                .attr("transform", "translate("+padding+",0)")
+                .call(yInner);
+
+        svg.selectAll("rects")
+                .data(dataset)
+                .enter()
+                .append("rect")
+                .attr("x", function(d,i){
+                    return xScale(i);
+                })
+                .attr("y", function(d){
+                    return yscale(parseFloat(d.得分率)/100);
+                })
+                .attr("width", xscale.rangeBand())
+                .attr("height", function(d){
+                    return h-yscale(parseFloat(d.得分率)/100)-padding;
+
+                })
+                .attr("fill", "rgb(0, 0, 200)")
+                .append("title")
+                .text(function(d,i){return  "系列“主观题得分情况”点"
+                        +"\n"+"值"+ d.得分率;});
+
+
+        svg.append("g")
+                .attr("class", "xaxis")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis);
+        svg.append("g")
+                .attr("class","yaxis")
+                .attr("transform","translate("+padding+",0)")
+                .call(yAxis);
+
+    });
+
+</script>
+
+<script type="text/javascript">
+    var w=800;
+    var h=500;
+    var padding=60;
+    var num=[];
+    var score=[];
+    //获取数据
+    d3.csv("fenshufenbu.csv",function(error,object) {
+
+        console.log(object);
+        object.forEach(function (d) {
+
+            num.push(d.人数);
+            score.push(d.分数);
+
+
+        });
+
+        // 定义画布
+        var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+        //添加背景
+        svg.append("g")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", w)
+                .attr("height", h)
+                .style("fill", "#fff")
+                .style("stroke-width", 2)
+                .style("stroke", "#E7E7E7");
+
+        //横坐标轴比例尺
+        var xScale = d3.scale.linear()
+                .domain([0, object.length - 1])
+                .range([padding, w - padding]);
+
+        //纵坐标轴比例尺
+        var yScale = d3.scale.linear()
+                .domain([0,12])
+                .range([h - padding, padding]);
+
+        //定义横轴
+        var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .ticks(object.length);
+
+        //定义纵轴
+
+        var yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left")
+                .ticks(7);
+
+
+        //x轴方向的线
+        var xInner = d3.svg.axis()
+                .scale(yScale)
+                .tickSize(-(w - padding * 2), 0, 0)
+                .tickFormat("")
+                .orient("left")
+                .ticks(7);
+
+        svg.append("g")
+                .attr("class", "inner_line")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(xInner);
+
+        //y轴方向的线
+        var yInner = d3.svg.axis()
+                .scale(xScale)
+                .tickSize(-(h - padding * 2), 0, 0)
+                .tickFormat("")
+                .orient("bottom")
+                .ticks(object.length);
+
+        svg.append("g")
+                .attr("class", "inner_line")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(yInner);
+
+
+        //添加横轴
+        var xBar = svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis)
+                .selectAll("text")
+                .text(function (i) {
+                    return score[i]
+                })
+                .attr("transform", "rotate(" + 90 + ",-6,20)");
+//            .attr("writing-mode","tb");
+
+        //添加纵轴
+        var yBar = svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);
+        //添加标题
+        svg.append("text")
+                .text("分数分布情况")
+                .attr("x", w/2)
+                .attr("y", padding/2 )
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "30px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+        //添加折线
+        var line = d3.svg.line()
+                .interpolate("linear")
+                .x(function (d, i) {
+                    return xScale(i);
+                })
+                .y(function (d) {
+                    return yScale(d)
+                });
+
+
+        var path = svg.append("path")
+                .attr("d", line(num))
+                .style("fill", "#F00")
+                .style("fill", "none")
+                .style("stroke-width", 1)
+                .style("stroke", "#F00")
+                .style("stroke-opacity", 0.9);
+        //  添加系列的小圆点
+        svg.selectAll("circle1")
+                .data(num)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d, i) {
+                    return xScale(i);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d);
+                })
+                .attr("r", 5)
+                .attr("fill", function (d) {
+                    return "rgb(200,0, 0)";
+                })
+                .append("title")
+                .text(function (d, i) {
+                    return "系列“分数分布情况”" + "点" + score[i] +
+                            "\n" + "值" + d;
+                });
+    })
+</script>
+
+</body>

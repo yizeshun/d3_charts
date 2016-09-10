@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>svg3</title>
+    <script src="../d3/d3.js"> </script>
+
+    <style>
+
+        #newRect{opacity: 0.5;}
+
+    </style>
+</head>
+<body>
+
+<svg width="900" height="600">
+
+    <rect width="900" height="600" id="newRect" fill="yellow"></rect>
+
+</svg>
+<script type="text/javascript">
+    var  w = 900;
+    var  h = 600;
+    var dataset = [{"domain":1,"domainName":"本科生","num":3124},
+                   {"domain":2,"domainName":"研究生","num":88}];
+    var pie = d3.layout.pie().value(function(d){return d.num});
+    var outerRadius = h / 2;
+    var innerRadius = 0.01;
+    var color = d3.scale.category10();
+    var arc = d3.svg.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius);
+    console.log(pie(dataset));
+    var svg = d3.select("#newRect")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+    var arcs = svg.selectAll("g.arc")
+            .data(pie(dataset))
+            .enter()
+            .append("g")
+            .attr("class", "arc")
+            .attr("transform", "translate(" + outerRadius + ", " + outerRadius
+                    + ")");
+
+    arcs.append("path")
+            .attr("fill", function(d, i) {
+                return color(i);
+            })
+            .attr("d", function (d) {
+                            return arc(d);
+            })
+            .on("mouseover",function(d,i){
+                d3.select(this)
+                        .style("fill","blue");
+
+
+            })
+            .on("mouseout",function(d,i){
+                d3.select(this)
+                        .style("fill",color(i))
+            });
+    arcs.append("text")
+            .attr("transform", function(d) {
+                return "translate(" + arc.centroid(d) + ")";
+            })
+            .attr("text-anchor", "middle")
+            .text(function(d) {
+                return d.value;
+            });
+
+</script>
+</body>
+</html>

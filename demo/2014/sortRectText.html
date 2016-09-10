@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>svg3</title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+       rect:hover{
+           fill:orange;
+
+       }
+     svg  text{
+          pointer-events:none;
+      }
+
+
+    </style>
+</head>
+<body>
+<p>click here to sort</p>
+<script type="text/javascript">
+    var  w = 600;
+    var  h = 250;
+    var barPadding=1;
+    var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+        11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+
+    var yscale=d3.scale.linear();
+    yscale.domain([0,d3.max(dataset,function(d){return d;})])
+            .range([0,250]);
+    var xscale=d3.scale.ordinal();
+    xscale.domain(d3.range(dataset.length))
+            .rangeRoundBands([0,w],0.05);
+
+
+
+
+
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+
+    svg.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("x", function(d,i){
+                return xscale(i);
+            })
+            .attr("y", function(d){
+                return h-yscale(d);
+            })
+            .attr("width", xscale.rangeBand())
+            .attr("height", function(d){
+                return yscale(d);
+
+            })
+            .attr("fill", function(d) {
+                return "rgb(0, 0, "+d*10+")";
+            });
+
+
+//            .on("mouseover", function () {
+//                   d3.select(this)
+//                     .attr("fill","orange")
+//            })
+//            .on("mouseout",function(){
+//                   d3.select(this)
+//                     .transition()
+//                     .duration(500)
+//                     .attr("fill",function(d){return "rgb(0, 0, "+d*10+")";})
+//            });
+    svg.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+
+            .text(function(d){
+                return d;
+            })
+            .attr("x", function(d, i) {
+                return xscale(i)+xscale.rangeBand()/2;
+            })
+            .attr("y", function(d) {
+                return h - (yscale(d))+14;
+            })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "11px")
+            .attr("fill", "white")
+            .attr("text-anchor", "middle");
+
+
+
+    d3.select("p")
+            .on("click",function(){sortBars();});
+
+    var sortBars=function() {
+        svg.selectAll("rect")
+                .sort(function (a, b) {
+                    return d3.ascending(a, b);
+                })
+                .transition()
+                .delay(function(d, i) {
+                    return i * 50;
+                })
+                .duration(1000)
+                .attr("x", function (d, i) {
+                    return xscale(i);
+                });
+        svg.selectAll("text")
+
+                .sort(function (a, b) {
+                    return d3.ascending(a, b);
+                })
+                .transition()
+                .delay(function(d, i) {
+                    return i * 50;
+                })
+                .duration(1000)
+                .attr("x", function (d, i) {
+                    return xscale(i)+xscale.rangeBand()/2;
+                })
+
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "11px")
+                .attr("fill", "white")
+                .attr("text-anchor", "middle");
+    };
+//
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

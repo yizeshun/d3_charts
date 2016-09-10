@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+    <style type="text/css">
+        canvas{border:dashed 2px #CCC}
+    </style>
+</head>
+<body>
+<canvas id="myCanvas" width="600" height="600">
+    Your browser does not support the canvas element.
+</canvas>
+<button onclick="redraw()">重绘路径</button>
+   <script>
+
+       var color=["red","blue","grey"];
+       var dataset=[
+               [[300,0],[300,0.98],[300,1.94],[300,3.84],[300,7.60],[300,10.60]],
+               [[300,1.94],[300,3.84],[300,7.60],[300,10.60],[300,18.90],[300,20.16]],
+               [[300,7.60],[300,10.60],[300,18.90],[300,20.16],[300,30.16],[300,40.89]]
+
+
+
+       ];
+       var canvas=document.getElementById("myCanvas");
+       var context=canvas.getContext("2d");
+      /* var canvas=document.getElementById("myCanvas");
+       var context=canvas.getContext("2d");
+       context.beginPath();
+       context.lineWidth=3;
+       context.strokeStyle="red";
+       context.moveTo(300,0);
+       context.lineTo(300,0.98);
+       context.lineTo(300,1.94);
+       context.lineTo(300,3.84);
+       context.lineTo(300,7.60);
+       context.stroke();
+*/
+       var i=0;
+       function redraw(){
+           if(i>2){
+               i=0;
+           }
+           var l=dataset[i];
+           draw(l,i);
+           i++;
+
+       }
+
+
+       function draw(arr,k){
+           console.log("aa");
+           context.fillRect( 0, 0, 600, 600 );
+           context.beginPath();
+           context.lineWidth=3;
+           context.strokeStyle=color[k];
+           context.moveTo(arr[0][0],arr[0][1]);
+           for(var j=1;j<arr.length;j++){
+               context.lineTo(arr[j][0],arr[j][1]);
+           }
+           context.stroke();
+
+       }
+
+
+
+   </script>
+
+
+
+</body>
+</html>

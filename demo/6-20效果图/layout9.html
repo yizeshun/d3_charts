@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+
+    <script src="lib/d3.v3.js"></script>
+    <style>
+        * {
+            padding: 0; margin: 0;
+        }
+        html,body {
+            margin: 0; padding: 0;
+            background-color: #ededee;
+
+            height: 100%;
+        }
+
+        #chart{
+            margin: 0 auto;
+            width: 900px;
+            height:900px;
+            background-size: 20% auto;
+            background-repeat: repeat;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #legend{
+            position: absolute;
+            z-index: 9999;
+
+        }
+        .lText,.rText{
+            font-size: 12px;
+        }
+        .legend{
+            font-size: 10px;
+            font-family: "微软雅黑";
+        }
+        .title{
+            font-size: 14px;
+            font-family: "微软雅黑";
+        }
+        .main{
+            position: absolute;
+
+        }
+    </style>
+</head>
+<body>
+
+<div id="chart">
+
+    <svg id="legend"></svg>
+
+</div>
+
+<script>
+
+    //获取数据
+    function getData(url){
+        d3.json(url,function(error,root){
+            if(error){
+                throw error;
+            }else{
+                var data=root;
+                drawImg(data);
+
+            }
+        });
+    }
+
+    // 角度转弧度
+    function degToRadian(deg){
+        var radian = deg/180 * Math.PI;
+        return radian;
+    }
+
+    //布局函数
+    function layout(data,w){
+
+        var width=w*0.5;   //svg画布的宽
+        var height=w*0.5;  //svg画布的高
+        var R=width/2;     //扇形外半径
+        var r=R/2;        //扇形内半径
+        var pr = padding_radius = 2;  //每个小弧在放射方向上的间隔
+        var er = elem_radius = (R-r-pr*3)/4;//每个小弧的半径
+        var ipa= degToRadian(1); // 每个小弧在顺时针方向上的间隔,以弧度表示
+        var opa= degToRadian(9); // 每个大弧在顺时针方向上的间隔,以弧度表示
+        var part=(Math.PI*2-data.length*opa)/data.length; //每个大弧的弧度
+        var newData; //返回的布局数据
+
+
+
+        data.forEach(function(d,i){
+
+            var start=i*part+i*opa;//每个大弧的起始角
+            solve(start, d.property,i); //每个大弧具体的布局函数
+
+        });
+
+
+        function solve(start,arr,p){
+
+            var itemPart=(part-ipa*(arr.length-1))/arr.length;//每个property的弧度
+
+            arr.forEach(function(d,i){
+
+                var itemStart=start+i*itemPart+i*ipa;//每个property起始的弧度
+
+                d.data=[];//给每个property加上一下数组,用于存储每个property所包含的四个放射方向小弧的数据
+
+                var num;  //用于计算给每个property的四个放射方向的弧加颜色的个数
+                if(d.value>0&&d.value<=25){
+                    num=1;
+                }else if(d.value>25&& d.value<=50){
+                    num=2;
+                }else if(d.value>50&&d.value<=75){
+                    num=3;
+                }else{
+                    num=4;
+                }
+
+                //每个property只用四个放射方向的弧代表数值
+                for(var j=0;j<4;j++){
+
+                    if(j<num){
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"hsla("+color[p]+","+(25*(j+1))+"%,"+50+"%,"+0.5+")"
+                        })
+                    }else{
+                        d.data.push({
+                            startAngle:itemStart,
+                            endAngle:itemStart+itemPart,
+                            ir:r+j*er+j*pr,
+                            or:r+(j+1)*er+j*pr,
+                            color:"#EDEDED"
+                        })
+                    }
+
+                }
+
+            });
+        }
+
+        newData=data;
+
+        return newData;
+
+    }
+
+    function drawArc(w,h,data){
+        var width=w*0.6;
+        var height=w*0.6;
+        var ipa= degToRadian(1); // 每个小弧在顺时针方向上的间隔,以弧度表示
+        var opa= degToRadian(9); // 每个大弧在顺时针方向上的间隔,以弧度表示
+        var part=(Math.PI*2-data.length*opa)/data.length; //每个大弧的弧度
+        var arc = d3.svg.arc()
+                .startAngle(function(d){return d.startAngle})
+                .endAngle(function(d){return d.endAngle})
+                .innerRadius(function(d){return d.ir})
+                .outerRadius(function(d){return d.or});
+
+        var roundArc = d3.svg.arc()
+                .startAngle(function(d){return d.startAngle})
+                .endAngle(function(d){return d.endAngle})
+                .innerRadius(function(d){return d.ir})
+                .outerRadius(function(d){return d.or})
+                .cornerRadius(5);
+
+
+
+        var svg=d3.select("body")
+                .select("#chart")
+                .append("svg")
+                .attr("class","main")
+                .attr("width",w)
+                .attr("height",w*0.7)
+                .style({top:h*0.08});
+
+        svg.append("circle").attr("r",width*0.46)
+                .attr("fill","#fff")
+                .attr("transform","translate("+(w*0.5)+","+(w*0.35)+")");
+
+        svg.append("rect").attr({width:width*0.4,height:width*0.4})
+                .attr("fill","#fff")
+                .attr("transform","translate("+(w*0.5)+","+(w*0.35)+")");
+
+        var box=svg.append("g")
+                .attr('transform',"translate("+(w*0.5)+","+(w*0.35)+")")
+                .attr("class","bg");
+
+        box.append("text").text("天性").attr("font-size",50).attr("dx",-40);
+        box.append("text").text("特质").attr("font-size",50).attr("dx",-40)
+                .attr("y",50);
+
+        box.selectAll("g").data(data)
+                .enter()
+                .append("g")
+                .attr("class",function(d){
+                    return "category"+ d.id;
+                });
+
+        var categories=box.selectAll("g");
+
+        categories.each(function(d,i){
+            var gs=d3.select(this).selectAll("g")
+                    .data(d.property)
+                    .enter()
+                    .append("g");
+
+            gs.each(function(m,i){
+
+                d3.select(this).selectAll("path")
+                        .data(m.data)
+                        .enter()
+                        .append("path")
+                        .attr("d",i==0||i==3?roundArc:arc)
+                        .style("fill",function(d){return d.color});
+
+                d3.select(this).selectAll("text")
+                        .data([m])
+                        .enter()
+                        .append("text")
+                        .text(function(d){return d.name})
+                        .attr("dy","0.2em")
+                        .attr("font-size",10)
+                        .attr("transform", function(d){
+
+                            var angle= (d["data"][0].startAngle+d["data"][0].endAngle)/2;
+                            return "rotate(" + ( angle * 180 / Math.PI ) + ")" +
+                                    "translate(-20,"+ -1.0*(w*0.25+10) +")" ;                                   ;
+                        });
+
+
+            });
+
+
+        });
+
+    }
+
+
+    function drawLegend(data,w,h){
+
+        //添加图例
+        var width=w*0.5;
+        var height=h*0.5;
+        var svgLegend=d3.select("#legend")
+                .attr("width",width)
+                .attr("height",height);
+
+        svgLegend.style({"left":w*0.5,"top":h*0.7});
+
+        var gl=svgLegend.append("g").attr("transform","translate(0,10)");
+
+
+        var lengends=gl.selectAll("g")
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("transform","translate("+(width*0.47)+",0)")
+                .attr("class",function(d){return "legend"+ d.id});
+
+        lengends.each(function(d,i){
+
+            var legend=d3.select(this);
+            legend.append("circle")
+                    .attr("cy",i*27)
+                    .attr("r",10)
+                    .style("fill","hsla("+color[d.id-1]+",100%,50%,"+0.5+")");
+
+            legend.append("text")
+                    .attr("y",i*27+5)
+                    .attr("x",-80)
+                    .attr("font-size",16)
+                    .attr("class","legend")
+                    .text(function(d){return d.name});
+
+        });
+
+        var box=d3.select(".main").select(".bg");
+
+    }
+
+
+    function drawImg(data){
+
+
+        var chart=document.getElementById("chart");
+        var width=chart.offsetWidth;
+        console.log("width"+width);
+        var height=chart.offsetHeight;
+        console.log("height",height);
+
+        var nodes=layout(data,width);
+
+        drawArc(width,height,nodes);
+
+        drawLegend(data,width,height);
+
+    }
+
+    var color=[2,195,166,80,39];
+
+    getData("data.json");
+
+
+
+
+</script>
+
+
+</body>
+</html>

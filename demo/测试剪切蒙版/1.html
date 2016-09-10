@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+
+</head>
+<body>
+
+<script language="JavaScript">
+
+    var dataset=[1];
+
+
+   var svg=d3.select("body").append("svg")
+           .attr("width",600)
+           .attr("height",600)
+           .append("g");
+
+    var circle_g=svg.append("g").selectAll("circle")
+            .data(dataset)
+            .enter()
+            .append("circle")
+            .attr("cx",function(d,i){return (i+1)*100})
+            .attr("cy",300)
+            .attr("r",30);
+
+
+    var clip=svg.append("defs")
+            .append("clipPath")
+            .attr("id", "clipWave");
+
+    var rect=clip.append("rect")
+            .attr("x",0)
+            .attr("y",200)
+            .attr("width",150)
+            .attr("height",150);
+
+
+    function AnimateRect(){
+
+        rect.attr('transform','translate(0,0)')
+                .transition()
+                .duration(3000)
+                .ease('linear')
+                .attr('transform','translate(600,0)')
+                .each('end', function(){
+                    rect.attr('transform','translate(0,0)');
+                    AnimateRect();
+                });
+
+
+    }
+
+    circle_g.attr("clip-path", "url(#clipWave)");
+
+    AnimateRect();
+
+</script>
+</body>
+</html>

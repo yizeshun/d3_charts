@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+
+    <style>
+
+        text{
+
+            stroke-width:2px;
+            opacity: .6;
+
+        }
+
+
+
+        polyline{
+            opacity: .3;
+            stroke: black;
+            stroke-width: 2px;
+            fill: none;
+        }
+
+    </style>
+
+</head>
+<body>
+
+
+
+<input type="button" onclick="chageData()" value="改变数据">
+<input type="button" onclick="changeSize(1000,800)" value="改变大小">
+<script>
+
+
+
+        var  width;  //画布宽度 全局变量
+        var  height; //画布高度 全局变量
+        var radius;  //整个环所在的区域半径 全局变量
+
+        var svg = d3.select("body")//画布 全局变量
+                .append("svg");
+
+
+        //初始化svg画布的大小
+        function InitSvg(){
+
+          width=600;
+
+          height=300;
+
+          radius=Math.min(width, height)/2;
+
+          svg.attr("width", width)
+             .attr("height", height);
+
+
+        }
+
+
+        //改变画布大小
+        function changeSize(newWidth,newHeight){
+
+              svg.attr("width", newWidth)
+                 .attr("height", newHeight);
+
+              width=newWidth;
+
+              height=newHeight;
+
+              radius= Math.min(width, height) / 2;
+
+              chageData();//请求数据画图
+
+        }
+
+
+        //请求数据画图
+        function chageData(){
+
+            d3.json("data.json",function(error,data){ // 请求动态数据
+
+                var dataset=data.return;
+
+                drawPie(dataset);//画圆环
+
+            });
+
+        }
+
+
+        function drawPie (dataset){   // 画圆环
+
+            var pie = d3.layout.pie()
+                    .sort(null)       //不排序
+                    .value(function(d) {
+                        return d.name.Level;
+                    });
+
+
+            var color = d3.scale.category20();
+
+            var arc = d3.svg.arc()
+                    .innerRadius(radius*0.8)
+                    .outerRadius(radius*0.4);
+
+
+            var outerArc = d3.svg.arc()  //  外圆弧，用于设定折线的折点
+                    .innerRadius(radius * 0.9)
+                    .outerRadius(radius * 0.9);
+
+
+            // 求出圆弧中心角
+            function midAngle(d){
+                return d.startAngle + (d.endAngle - d.startAngle)/2;
+            }
+
+
+
+
+            //update g 部分
+            var update_g = svg.selectAll("g.arc")
+                    .data(pie(dataset));
+
+            //update path 部分
+            var update_path = svg.selectAll("path")
+                    .data(pie(dataset));
+
+            //update polyline 部分
+            var update_polyline = svg.selectAll("polyline")
+                    .data(pie(dataset));
+
+            //update text 部分
+            var update_text = svg.selectAll("text")
+                    .data(pie(dataset));
+
+
+            //update title 部分
+            var update_title = svg.selectAll("title")
+                    .data(pie(dataset));
+
+
+            //enter g 部分
+            var enter_g=update_g
+                    .enter();
+
+
+            //enter g 部分
+            var enter_g=update_g
+                    .enter();
+
+
+            //exit g 部分
+
+            var exit_g=update_g.exit();
+
+
+            //update部分处理办法
+
+
+
+           //圆弧
+            var path=update_path
+                    .attr("fill", function(d, i) {
+                        return color(i);
+                    })
+                    .attr("d", function (d) {
+
+                        return arc(d);
+                    })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")")
+                    .on("mouseover",function(d,i){
+                        d3.select(this)
+                                .style("fill","#93c8f0");
+
+
+                    })
+                    .on("mouseout",function(d,i){
+                        d3.select(this)
+                                .style("fill",color(i))
+                    });
+
+
+            // 折线
+            var polyline=update_polyline
+                     .attr("class","polyline")
+                     .attr("points",function(d){
+
+                         var pos = outerArc.centroid(d);
+
+                         pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+
+                         return [arc.centroid(d), outerArc.centroid(d), pos]
+                     })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")");
+
+
+            // 文字
+            var text=update_text
+                    .attr("class","text")
+                    .attr("dy", ".35em")
+                    .text(function(d){
+                        return d.data.id;
+
+                    })
+                    .attr("x",function(d){
+
+                        return radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+
+                    })
+                    .attr("y",function(d){
+
+                        var pos = outerArc.centroid(d);
+
+                        return pos[1];
+
+                    })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")")
+                    .style("text-anchor",function(d){
+
+                        return midAngle(d) < Math.PI ? "start":"end";
+
+                    });
+
+            // 鼠标悬浮提示
+            var title=update_title
+                    .attr("class","title")
+                    .text(function(d){
+
+                        return "Level is "+d.data.name.Level;
+
+                    });
+
+
+
+
+            //enter部分处理办法
+            var enterArc=enter_g.append("g")
+                    .attr("class", "arc");
+
+
+            enterArc.append("path")
+                    .attr("fill", function(d, i) {
+                        return color(i);
+                    })
+                    .attr("d", function (d) {
+
+                        return arc(d);
+                    })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")")
+                    .on("mouseover",function(d,i){
+                        d3.select(this)
+                                .style("fill","#93c8f0");
+
+
+                    })
+                    .on("mouseout",function(d,i){
+                        d3.select(this)
+                                .style("fill",color(i))
+                    });
+
+
+            enterArc.append("polyline")
+                    .attr("class","polyline")
+                    .attr("points",function(d){
+
+                        var pos = outerArc.centroid(d);
+
+                        pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+
+                        return [arc.centroid(d), outerArc.centroid(d), pos]
+                    })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")");
+
+
+            enterArc.append("text")
+                    .attr("class","text")
+                    .attr("dy", ".35em")
+                    .text(function(d){
+                        return d.data.id;
+
+                    })
+                    .attr("x",function(d){
+
+                        return radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+
+                    })
+                    .attr("y",function(d){
+
+                        var pos = outerArc.centroid(d);
+
+                        return pos[1];
+
+                    })
+                    .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")")
+                    .style("text-anchor",function(d){
+
+                        return midAngle(d) < Math.PI ? "start":"end";
+
+                    });
+
+
+            enterArc.append("title")
+                    .attr("class","title")
+                    .text(function(d){
+
+                        return "Level is "+d.data.name.Level;
+
+                    });
+
+
+            //exit 部分处理办法
+            exit_g.remove();
+
+
+
+        }
+
+
+        InitSvg();
+
+        chageData();
+
+
+
+
+
+</script>
+
+</body>
+</html>

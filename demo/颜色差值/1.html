@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+      <script>
+
+
+          var dataset=[1];
+
+         var svg=d3.select("body")
+                  .append("svg")
+                  .attr("width",600)
+                  .attr("height",600);
+
+          var a=d3.rgb(255,0,0);
+          var b=d3.rgb(0,255,0);
+          var compute=d3.interpolate(a,b);
+          console.log(compute(0));
+          console.log(compute(1));
+          var linear=d3.scale.linear()
+                  .domain([0,150])
+                  .range([0,1]);
+
+         /* var rects=svg.selectAll("rect")
+                  .data(d3.range(150))
+                  .enter()
+                  .append("rect")
+                  .attr("x",function(d,i){
+                      return i%15*15;
+                  })
+                  .attr("y", function (d,i) {
+                      return Math.floor(i/15)*15;
+                  })
+                  .attr("width",15)
+                  .attr("height",15)
+                  .style("fill",function(d){
+                      return compute(linear(d));
+                  }).on("mouseover",function(){
+                      d3.select(this)
+                              .style("fill","yellow");
+                  }).on("mouseout",function(d){
+                      d3.select(this)
+                              .style("fill",function(){
+                                  return compute(linear(d));
+                              });
+                  });*/
+
+          //添加渐变矩形
+        /* var defs=svg.append("defs");
+         var linearGradient=defs.append("linearGradient")
+                 .attr("id","myGradient")
+                 .attr("x1","0%")
+                 .attr("y1","0%")
+                 .attr("x2","100%")
+                 .attr("y2","0%");
+         var stop1=linearGradient.append("stop")
+                 .attr("offset","0%")
+                 .attr("stop-color","#F00");
+         var stop2=linearGradient.append("stop")
+                 .attr("offset","100%")
+                 .attr("stop-color","#0FF");
+
+         var rect=svg.append("rect")
+                 .attr("x",10)
+                 .attr("y",10)
+                 .attr("width",300)
+                 .attr("height",100)
+                 .style("fill","url(#"+linearGradient.attr("id")+")");
+*/
+
+         //添加渐变圆形
+          var defs=svg.append("defs");
+          var radialGradient=defs.append("radialGradient")
+                  .attr("id","myRadialGradient")
+                  .attr("fx",0.5)
+                  .attr("fy",0.5)
+                  .attr("cx",0.5)
+                  .attr("cy",0.5);
+
+          var stop1=radialGradient.append("stop")
+                  .attr("offset","0%")
+                  .attr("stop-color","#F00")
+                  .attr("stop-opacity",0);
+
+          var stop2=radialGradient.append("stop")
+                  .attr("offset","100%")
+                  .attr("stop-color","#0FF")
+                  .attr("stop-opacity",0.7);
+
+
+          var circle=svg.selectAll("circle")
+                  .data(dataset)
+                  .enter()
+                  .append("circle")
+                  .attr("stroke","none")
+                  .attr("cx",300)
+                  .attr("cy",300)
+                  .attr("r",300)
+                  .style("fill","url(#"+radialGradient.attr("id")+")");
+
+      </script>
+     <!-- //定义渐变标签
+      <svg>
+
+          <defs>
+              <linearGradient id="myGradient" x1=0%,y1=0%,x2=100%,y2=0%>
+                  <stop offset="0%" stop-color="#F00"/>
+                  <stop offset="100%" stop-color="#0FF"/>
+              </linearGradient>
+
+          </defs>
+
+          <rect fill="url(#myGradient)" x="10" y="10" width="300" height="100"/>
+
+
+      </svg>-->
+
+    <!--  <svg width=600 height=600 version="1.1"
+           xmlns="http://www.w3.org/2000/svg">
+
+          <defs>
+              <filter id="Gaussian_Blur">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+              </filter>
+          </defs>
+
+          <ellipse cx="200" cy="150" rx="70" ry="40"
+                   style="fill:#ff0000;stroke:#000000;
+stroke-width:2;filter:url(#Gaussian_Blur)"/>
+
+      </svg>-->
+
+
+</body>
+</html>

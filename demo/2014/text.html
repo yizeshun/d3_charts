@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>
+
+    </title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+<script type="text/javascript">
+    var  w = 300;
+    var  h = 300;
+    var  padding=20;
+
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",w)
+            .attr("height",h);
+
+
+    var text=svg.append("text")
+            .attr("x",10)
+            .attr("y",10)
+            .style("fill","red")
+            .style("font-size",32)
+            .text("afjladjflajda");
+
+
+    /*d3.csv("text.csv",function(error,dataset){
+        console.log(dataset);
+
+        var yscale=d3.scale.linear();
+        yscale.domain([0,d3.max(dataset,function(d){return "+d.value+"})])
+                .range([0,250]);
+        var xscale=d3.scale.ordinal();
+        xscale.domain(d3.range(dataset.length))
+                .rangeRoundBands([0,w],0.05);
+
+
+
+
+        svg.selectAll("rect")
+                .data(dataset)
+                .enter()
+                .append("rect")
+                .attr("x", function(d,i){
+                    return xscale(i);
+                })
+                .attr("y", function(d){
+                    return h-yscale("+d.value+");
+                })
+                .attr("width", xscale.rangeBand())
+                .attr("height", function(d){
+                    return yscale("+d.value+");
+
+                });
+
+
+        console.log(dataset[1].value);
+
+
+    })*/
+</script>
+</body>
+</html>

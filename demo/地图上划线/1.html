@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="../d3/topojson.v1.min.js"> </script>
+    <style>
+
+        .location circle{
+            fill: blue;
+        }
+
+        .line_path{
+            fill: none;
+            stroke:white;
+            stroke-width: 1.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+
+        var width=700,
+                height=700;
+        var svg=d3.select("body")
+                .append("svg")
+                .attr("width",width)
+                .attr("height",height);
+        var projection=d3.geo.mercator()
+                .center([107,31])
+                .scale(600)
+                .translate([width/2,height/2]);
+        var path=d3.geo.path().projection(projection);
+        d3.json("china.topojson",function(error,toproot) {
+
+            if (error) {
+                return console.error(error);
+            }
+            console.log(toproot);
+            var georoot = topojson.feature(toproot, toproot.objects.china);
+            console.log(georoot);
+            var china = svg.append("g");
+            var provinces = china.selectAll("path")
+                    .data(georoot.features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "province")
+                    .style("fill", "#ccc")
+                    .attr("d", path);
+
+            d3.json("places.json", function(error, places ) {
+
+                //插入分组元素
+                var location = svg.selectAll(".location")
+                        .data(places.location)
+                        .enter()
+                        .append("g")
+                        .attr("class", "location")
+                        .attr("transform", function (d) {
+                            //计算标注点的位置
+                            var coor = projection([d.log, d.lat]);
+                            return "translate(" + coor[0] + "," + coor[1] + ")";
+                        });
+
+                location.append("image")
+                        .attr("width",20)
+                        .attr("height",20)
+                        .attr("x",-10)
+                        .attr("y",-10)
+                        .attr("xlink:href","img/circle.png");
+
+                var peking=projection([116.3,39.9]);
+                var tibet=projection([91.2,29.7]);
+                var xinjiang=projection([87.6,43.8]);
+                var str="M"+peking[0]+" "+peking[1]+"L"+peking[0]+" "+peking[1]+"Q"+xinjiang[0]+" "+xinjiang[1]+","+tibet[0]+" "+tibet[1];
+                svg.append("path")
+                        .attr("d",str)
+                        .attr("class","line_path");
+
+
+
+            });
+
+
+            });
+
+
+    </script>
+
+
+</body>
+</html>

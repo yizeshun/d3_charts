@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+</head>
+<body>
+
+    <script>
+
+        var width=500;
+        var height=500;
+        var drag=d3.behavior.drag()
+                .on("drag",mousemove);
+
+        function mousemove(){
+
+            d3.select(this)
+                    .attr("cx",function(){
+                        var cx=d3.event.x;
+                        if(cx>470){
+                            cx=470;
+                        }
+                        if(cx<30){
+                            cx=30
+                        }
+                        return cx;
+                    } )
+                    .attr("cy", function(){
+                        var cy=d3.event.y;
+                        if(cy>470){
+                            cy=470;
+                        }
+                        if(cy<30){
+                            cy=30;
+                        }
+                        return cy;
+                    });
+        }
+
+
+        var circles = [ { cx: 150, cy:200, r:30 },
+            { cx: 250, cy:200, r:30 }];
+
+
+        var svg=d3.select("body")
+                .append("svg")
+                .attr("height",height)
+                .attr("width",width);
+
+        svg.selectAll("circle")
+                .data(circles)
+                .enter()
+                .append("circle")
+                .attr("cx",function(d){
+                    return d.cx;
+                })
+                .attr("cy",function(d){
+                    return d.cy;
+                })
+                .attr("r",function(d){
+                    return d.r;
+                })
+                .attr("fill","blue")
+                .call(drag);
+
+    </script>
+
+
+
+</body>
+</html>

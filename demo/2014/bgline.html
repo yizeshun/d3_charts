@@ -1,0 +1,120 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <script src="../d3/d3.js"> </script>
+
+        <style>
+
+        .axis path,
+        .axis line{
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+        }
+
+        .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+        }
+
+        .grid .tick {
+        stroke: lightgrey;
+        opacity: 0.7;
+        }
+        .grid path {
+        stroke-width: 0;
+        }
+        </style>
+        </head>
+        <body>
+
+        <script>
+
+        //=================坐标轴栅格=============
+        var width = 300;
+        var height = 200;
+        var dataset = [];
+        var num = 15;
+
+        for(var i = 0;i<num;i++){         //产生随机数
+        var x = Math.floor( Math.random() * 50 );
+        dataset.push(x);
+        }
+
+        var svg = d3.select("body").append("svg")
+        .attr("width",width+100)
+        .attr("height",height+100);
+
+        var XaxisScale = d3.scale.linear()
+        .domain([0,d3.max(dataset)])
+        .range([0,width]);
+
+
+        var YaxisScale = d3.scale.linear()
+        .domain([0,d3.max(dataset)])
+        .range([height,0]);
+
+        var Xaxis = d3.svg.axis()
+        .scale(XaxisScale)
+        .orient("bottom")
+        .ticks(5);
+
+        var Yaxis = d3.svg.axis()
+        .scale(YaxisScale)
+        .orient("left")
+        .ticks(5);
+
+        var Xscale = d3.scale.linear()
+        .domain([0,d3.max(dataset)])
+        .range([0,50]);
+
+        var Yscale = d3.scale.linear()
+        .domain([0,d3.max(dataset)])
+        .range([0,50]);
+
+        //构建网络栅格:设置tickSize()
+        var make_x = d3.svg.axis()
+        .scale(XaxisScale)
+        .orient("bottom")
+        .tickSize(-width+100, 0, 0)
+        .tickFormat("")
+        .ticks(5);
+        var make_y = d3.svg.axis()
+        .scale(YaxisScale)
+        .orient("left")
+        .tickSize(-height-100, 0, 0)
+        .tickFormat("")
+        .ticks(5);
+        svg.append("path").data([dataset,dataset]);
+
+
+        svg.append("g")
+        .attr("class","axis")
+        .attr("transform","translate(30,250)")
+        .call(Xaxis);
+
+        svg.append("g")
+        .attr("class","axis")
+        .attr("transform","translate(30,50)")
+        .call(Yaxis);
+
+
+
+        //绘制格栅-x方向
+        svg.append("g")
+        .attr("class", "grid")
+        .attr("transform","translate(30,250)")
+        .call(make_x);
+
+        //绘制格栅-y方向
+        svg.append("g")
+        .attr("class", "grid")
+        .attr("transform","translate(30,50)")
+        .call(make_y);
+
+
+        </script>
+        </body>
+        </html>

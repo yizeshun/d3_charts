@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <style type="text/css">
+        .canvas{border:dashed 2px #CCC}
+    </style>
+</head>
+<body>
+
+   <script>
+
+
+       var width=600;
+       var height=600;
+
+       var canvas=d3.select("body")
+               .append("canvas")
+               .attr("class","canvas")
+               .attr("width",width)
+               .attr("height",height);
+
+       var context=canvas.node().getContext("2d");
+
+       console.log(context);
+
+
+       context.moveTo(0,0);
+       context.lineTo(300,300);
+       var gnt1 = context.createLinearGradient(0,0,300,300);//线性渐变的起止坐标
+       gnt1.addColorStop(0,'red');//创建渐变的开始颜色，0表示偏移量，个人理解为直线上的相对位置，最大为1，一个渐变中可以写任意个渐变颜色
+       gnt1.addColorStop(1,'yellow');
+       context.lineWidth=3;
+       context.strokeStyle=gnt1;
+       context.stroke();
+
+
+   </script>
+
+
+
+</body>
+</html>

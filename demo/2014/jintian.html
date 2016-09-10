@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>svg3</title>
+    <script src="../d3/d3.js"> </script>
+    <style>
+        .xaxis path,
+        .xaxis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .yaxis path,
+        .yaxis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .xaxis text {
+            font-family: sans-serif;
+            font-size: 11px;
+            color: black;
+
+
+        }
+        .yaxis text {
+            font-family: sans-serif;
+            font-size: 11px;
+            color:black
+
+        }
+
+        .inner_line path,
+        .inner_line line {
+            fill: none;
+            stroke:grey;
+            shape-rendering: crispEdges;
+        }
+
+    </style>
+</head>
+<body style="text-align: center" >
+
+
+<script type="text/javascript">
+
+    var  w = 800;
+    var  h = 400;
+    var  padding=50;
+    var  danwei=["本科生","研究生","教师教育学院","教指委","教师培训"];
+    var teacherNum=[1465,1443,112,2,6];
+    var studentNum=[19133,5896,862,20,238];
+    var classNum=[3805,279,29,1,128];
+//teacherNum
+    var yscale=d3.scale.linear();
+        yscale.domain([0,1500])
+              .range([h-padding,padding]);
+
+    var xscale=d3.scale.ordinal();
+        xscale.domain(danwei)
+              .rangeRoundBands([padding,w-padding],0.05);
+
+   var xAxis=d3.svg.axis();
+        xAxis.scale(xscale)
+             .orient("bottom");
+    var yAxis=d3.svg.axis();
+        yAxis.scale(yscale)
+             .orient("left");
+        var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+//标题
+         svg.append("text")
+                 .text("教师人数")
+                 .attr("x",w/2)
+                 .attr("y",padding/2)
+                 .attr("font-family", "sans-serif")
+                 .attr("font-size", "20px")
+                 .attr("fill", "black")
+                 .attr("text-anchor", "middle");
+
+        svg.selectAll("texts")
+                .data(teacherNum)
+                .enter()
+                .append("text")
+                .text(function(d){
+                    return d;
+                })
+                .attr("x", function(d, i) {
+                    return xscale(danwei[i])+xscale.rangeBand()/2;
+                })
+                .attr("y", function(d) {
+                    return yscale(d)-5;
+                })
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "11px")
+                .attr("fill", "black")
+                .attr("text-anchor", "middle");
+// x方向的线
+        var yInner = d3.svg.axis()
+                .scale(yscale)
+                .tickSize(-(w-padding*2),0,0)
+                .tickFormat("")
+                .orient("left");
+//                .ticks(10);
+        svg.append("g")
+                .attr("class","inner_line")
+                .attr("transform", "translate("+padding+",0)")
+                .call(yInner);
+
+        svg.selectAll("rect")
+                .data(teacherNum)
+                .enter()
+                .append("rect")
+                .attr("x", function(d,i){
+                    return xscale(danwei[i]);
+                })
+                .attr("y", function(d){
+                    return yscale(d);
+                })
+                .attr("width", xscale.rangeBand())
+                .attr("height", function(d){
+                    return h-yscale(d)-padding;
+
+                })
+                .attr("fill", "rgb(0, 0, 200)");
+
+
+
+        svg.append("g")
+                   .attr("class", "xaxis")
+                   .attr("transform", "translate(0," + (h - padding) + ")")
+                   .call(xAxis);
+
+        svg.append("g")
+                .attr("class","yaxis")
+                .attr("transform","translate("+padding+",0)")
+                .call(yAxis);
+
+
+    //studentNum
+    var yscale1=d3.scale.linear();
+    yscale1.domain([10,19200])
+            .range([h-padding,padding]);
+
+    var xscale1=d3.scale.ordinal();
+    xscale1.domain(danwei)
+            .rangeRoundBands([padding,w-padding],0.05);
+
+    var xAxis1=d3.svg.axis();
+    xAxis1.scale(xscale1)
+            .orient("bottom");
+    var yAxis1=d3.svg.axis();
+    yAxis1.scale(yscale1)
+            .orient("left");
+    var svg1 = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+    //标题
+    svg1.append("text")
+            .text("学生人数")
+            .attr("x",w/2)
+            .attr("y" ,padding/2)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("text-anchor", "middle");
+
+
+    svg1.selectAll("texts1")
+            .data(studentNum)
+            .enter()
+            .append("text")
+            .text(function(d){
+                return d;
+            })
+            .attr("x", function(d, i) {
+                return xscale1(danwei[i])+xscale.rangeBand()/2;
+            })
+            .attr("y", function(d) {
+                return yscale1(d)-5;
+            })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "11px")
+            .attr("fill", "black")
+            .attr("text-anchor", "middle");
+    // x方向的线
+    var yInner1 = d3.svg.axis()
+            .scale(yscale1)
+            .tickSize(-(w-padding*2),0,0)
+            .tickFormat("")
+            .orient("left");
+    //                .ticks(10);
+    svg1.append("g")
+            .attr("class","inner_line")
+            .attr("transform", "translate("+padding+",0)")
+            .call(yInner1);
+
+    svg1.selectAll("rect")
+            .data(studentNum)
+            .enter()
+            .append("rect")
+            .attr("x", function(d,i){
+                return xscale1(danwei[i]);
+            })
+            .attr("y", function(d){
+                return yscale1(d);
+            })
+            .attr("width", xscale.rangeBand())
+            .attr("height", function(d){
+                return h-yscale1(d)-padding;
+
+            })
+            .attr("fill", "rgb(0, 0, 200)");
+
+
+
+    svg1.append("g")
+            .attr("class", "xaxis")
+            .attr("transform", "translate(0," + (h - padding) + ")")
+            .call(xAxis1);
+
+    svg1.append("g")
+            .attr("class","yaxis")
+            .attr("transform","translate("+padding+",0)")
+            .call(yAxis1);
+
+
+
+    //classNum
+    var yscale2=d3.scale.linear();
+    yscale2.domain([0,3900])
+            .range([h-padding,padding]);
+
+    var xscale2=d3.scale.ordinal();
+    xscale2.domain(danwei)
+            .rangeRoundBands([padding,w-padding],0.05);
+
+    var xAxis2=d3.svg.axis();
+    xAxis2.scale(xscale2)
+            .orient("bottom");
+    var yAxis2=d3.svg.axis();
+    yAxis2.scale(yscale2)
+            .orient("left");
+    var svg2 = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+    //标题
+    svg2.append("text")
+            .text("课堂数")
+            .attr("x",w/2)
+            .attr("y" ,padding/2)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "20px")
+            .attr("fill", "black")
+            .attr("text-anchor", "middle");
+
+    svg2.selectAll("texts")
+            .data(classNum)
+            .enter()
+            .append("text")
+            .text(function(d){
+                return d;
+            })
+            .attr("x", function(d, i) {
+                return xscale2(danwei[i])+xscale.rangeBand()/2;
+            })
+            .attr("y", function(d) {
+                return yscale2(d)-5;
+            })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "11px")
+            .attr("fill", "black")
+            .attr("text-anchor", "middle");
+    // x方向的线
+    var yInner2 = d3.svg.axis()
+            .scale(yscale2)
+            .tickSize(-(w-padding*2),0,0)
+            .tickFormat("")
+            .orient("left");
+    //                .ticks(10);
+    svg2.append("g")
+            .attr("class","inner_line")
+            .attr("transform", "translate("+padding+",0)")
+            .call(yInner2);
+
+    svg2.selectAll("rect")
+            .data(classNum)
+            .enter()
+            .append("rect")
+            .attr("x", function(d,i){
+                return xscale2(danwei[i]);
+            })
+            .attr("y", function(d){
+                return yscale2(d);
+            })
+            .attr("width", xscale2.rangeBand())
+            .attr("height", function(d){
+                return h-yscale2(d)-padding;
+
+            })
+            .attr("fill", "rgb(0, 0, 200)");
+
+
+
+    svg2.append("g")
+            .attr("class", "xaxis")
+            .attr("transform", "translate(0," + (h - padding) + ")")
+            .call(xAxis2);
+
+    svg2.append("g")
+            .attr("class","yaxis")
+            .attr("transform","translate("+padding+",0)")
+            .call(yAxis2);
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

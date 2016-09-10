@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+
+    <style type="text/css">
+        canvas{border:dashed 2px #CCC;
+        background-color: black;}
+    </style>
+</head>
+<body>
+<canvas id="myCanvas" width="2000" height="1500">
+    Your browser does not support the canvas element.
+</canvas>
+
+   <script>
+
+       var canvas=document.getElementById("myCanvas");
+       var context=canvas.getContext("2d");
+       var particleCount=100;
+       var particlePath=4;
+       var particles=[];
+       var gravity=0.1;
+
+
+       function rand( min, max ) {
+           return Math.random() * ( max - min ) + min;
+       }
+
+
+       function Particle(){
+
+           this.path=[];
+           this.reset();
+
+       }
+
+       Particle.prototype.reset=function(){
+           this.x=rand(0,2000);
+           this.y=0;
+           this.vy=0.1;
+           this.path.length=0;
+
+       };
+
+       Particle.prototype.step=function(){
+
+           this.path.unshift([this.x,this.y]);
+
+           if(this.path.length>particlePath){
+               this.path.pop();
+           }
+
+           this.vy+=gravity;
+           this.y+=this.vy;
+
+           if(this.y>1510){
+               this.reset();
+           }
+
+       }
+
+       Particle.prototype.draw=function(){
+           context.beginPath();
+           context.moveTo(this.x,this.y);
+           for(var i=0;i<this.path.length;i++){
+               var point=this.path[i];
+               context.lineTo(point[0],point[1]);
+           }
+           context.strokeStyle='hsla(' + rand(0,360) + ', 50%, 30%, 0.7)';
+           context.stroke();
+
+       }
+
+       function init(){
+
+           loop();
+       }
+
+       function step(){
+           if(particles.length<particleCount){
+                particles.push(new Particle())
+           }
+           var i=particles.length;
+           while(i--){
+               particles[i].step();
+           }
+       }
+
+       function draw(){
+           context.fillRect(0,0,2000,1500);
+           var i=particles.length;
+           while(i--){
+               particles[i].draw();
+           }
+       }
+
+       function loop(){
+           requestAnimationFrame( loop );
+           step();
+           draw();
+       }
+
+       init();
+   </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+
+
+</head>
+<body>
+
+<script>
+
+    'use strict';
+
+    angular.module('app.directives').directive('donutChart', function() {
+        return {
+            restrict: 'E',
+            scope: {
+                data: '=',
+                position: '='
+            },
+            link: function(scope, el) {
+                var color = d3.scale.category10();
+                var width = 400;
+                var height = 400;
+                var min = Math.min(width, height);
+                var svg = d3.select(el[0]).append('svg');
+                var pie = d3.layout.pie().sort(null);
+                var arc = d3.svg.arc()
+                        .outerRadius(min / 2 * 0.9)
+                        .innerRadius(min / 2 * 0.5);
+
+                svg.attr({
+                    width: width,
+                    height: height
+                });
+
+                // center the donut chart
+                var g = svg.append('g')
+                        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+                // add the <path>s for each arc slice
+                var arcs = g.selectAll('path');
+
+                scope.$watch('data', function(data) {
+                    if (!data) {
+                        return;
+                    }
+                    arcs = arcs.data(pie(data));
+                    arcs.exit().remove();
+                    arcs.enter().append('path')
+                            .style('stroke', 'white')
+                            .attr('fill', function(d, i) {
+                                return color(i);
+                            });
+                    // update all the arcs (not just the ones that might have been added)
+                    arcs.attr('d', arc);
+                }, true);
+
+                scope.$watch(function() {
+                    return scope.position;
+                }, function() {
+                    var currentChartWidthHeight = convertPositionToWidthHieght(scope.position);
+
+                    console.log('width:' + currentChartWidthHeight[0] + ', height:' + currentChartWidthHeight[1]);
+
+                    arcs.attr("transform", "translate(" + width / 2 + ", " + height / 2 +")");
+
+
+
+
+                }, true);
+
+                function convertPositionToWidthHieght(position){
+                    var height = $('.wg-preview-row').height();
+                    var width = $('.wg-preview-column').width();
+                    return [position.width * width, position.height * height];
+                }
+
+            }
+        };
+    });
+
+</script>
+
+</body>
+</html>

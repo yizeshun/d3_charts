@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+
+</head>
+<body>
+
+         <script>
+
+             var width=400;
+             var height=400;
+
+             var svg=d3.select("body")
+                     .append("svg")
+                     .attr("class","svg")
+                     .attr("width",width)
+                     .attr("height",height);
+
+
+             var line=svg.append("line")
+                     .style("stroke","blue")
+                     .style("stroke-width",2)
+                     .attr("opacity",0.3)
+                     .transition()
+                     .delay(2000)
+                     .duration(1000)
+                     .attr("x1",20)
+                     .attr("y1",20)
+                     .attrTween("x2",function(){
+                         var interpolate = d3.interpolate(20, 300);
+                         var _this = this;
+                         return function(t) {
+                             _this._current = interpolate(t);
+                             return _this._current;
+                         };
+                     })
+                     .attrTween("y2",function(){
+                         var interpolate = d3.interpolate(20, 300);
+                         var _this = this;
+                         return function(t) {
+                             _this._current = interpolate(t);
+                             return _this._current;
+                         };
+                     })
+         </script>
+
+
+</body>
+</html>

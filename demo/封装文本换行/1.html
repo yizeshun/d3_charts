@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="multext.js"></script>
+</head>
+<body>
+
+      <script>
+
+          var width = 300;
+          var height = 300;
+
+          var svg = d3.select("body")
+                  .append("svg")
+                  .attr("width",width)
+                  .attr("height",height);
+
+          var str = "青青子衿，悠悠我心，但为君故，沉吟至今。";
+
+         /* var multext=appendMultiText(svg,str,30,100,120,20,"simsun");
+
+          multext.attr("transform","rotate(-20)");*/
+
+          var g = svg.append("g");
+
+          var multext = appendMultiText(g,str,30,100,120);
+
+      </script>
+
+
+
+</body>
+</html>

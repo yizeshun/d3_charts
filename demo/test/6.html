@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+  <script>
+
+
+      var data1=[
+          {type:"t1",value:"test1"},
+          {type:"t1",value:"test2"},
+          {type:"t2",value:"test3"},
+          {type:"t2",value:"test4"},
+          {type:"t3",value:"test5"}
+      ];
+      //设计js程序，将data1数组中的数据按type进行分组，转换成以下json数据结构，
+      /*var data2={
+          t1:[{type:"t1",value:"test1"},{type:"t1",value:"test2"}],
+          t2:[{type:"t2",value:"test3"},{type:"t2",value:"test4"}],
+          t3:[{type:"t3",value:"test5"}]
+      };*/
+
+      /*var data2={};
+
+      var type="t1";
+
+      var objArray=[];
+
+      objArray.push(data1[0]);
+
+      data2.t1=objArray;
+
+      console.log(data2);
+
+      data2[type].push(data1[1]);
+
+      console.log(data2);
+*/
+      var result={};
+
+      data1.forEach(function(d){(result[d.type]||(result[d.type]=[]))&&result[d.type].push(d)});
+
+      console.log(result);
+
+
+
+
+     /* function has(typeArray,type){
+
+          if(typeArray.length!=0){
+
+              for(i=0;i<typeArray.length;i++){
+
+                  if(typeArray[i]==type){
+
+                      return true;
+
+                  }
+
+              }
+
+          }
+
+          return false;
+
+      }
+
+
+
+      function deal(data){
+
+
+           var types=[];
+
+           var data2={};
+
+           for(i=0;i<data.length;i++) {
+
+               var type = data[i].type;
+
+              if(has(types,type)==false){
+
+                   types.push(type);
+
+                   var objArray=[];
+
+                   objArray.push(data[i]);
+
+                   data2[type]=objArray;
+
+              }else{
+
+                   data2[type].push(data[i]);
+
+              }
+
+           }
+
+           console.log(data2);
+
+      }
+
+      deal(data1);
+*/
+
+
+  </script>
+
+
+
+</body>
+</html>

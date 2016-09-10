@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../d3/d3.js"> </script>
+    <script src="../d3/jquery-1.8.2.js"> </script>
+    <style>
+
+        .nodeRect {
+            stroke: white;
+            stroke-width: 2px;
+        }
+
+        .nodeName {
+            fill: white;
+            font-size: 12px;
+            font-family: simsun;
+        }
+
+    </style>
+</head>
+<body>
+
+<script>
+
+
+    var width=1550;
+    var height=850;
+    var svg=d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var g=svg.append("g");
+
+    g.append("rect")
+            .attr("x",0)
+            .attr("y",0)
+            .attr("width",width)
+            .attr("height",height)
+            .attr("fill","#98abc5");
+
+    g.on("click",function(){
+        d3.select(this).select("rect")
+                .transition()
+                .duration(1000)
+                .attr("width",0)
+                .attr("height",0);
+
+        setTimeout(function(){
+            window.location.href="http://localhost:63342/myProject/test/%E5%8A%A8%E6%80%81%E7%9A%84treemap%E7%82%B9%E5%87%BB%E9%80%80%E5%87%BA.html";},1000);
+
+    });
+
+
+
+</script>
+
+
+</body>
+</html>
